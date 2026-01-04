@@ -7,6 +7,7 @@ export default async function AdminDashboard() {
   const series = await listSeries();
   const recentSessions = await listRecentSessions(5);
   const activeSeries = series.filter((item) => item.isActive);
+  const seriesById = new Map(series.map((item) => [item.id, item.name]));
 
   return (
     <>
@@ -23,13 +24,18 @@ export default async function AdminDashboard() {
                   {" - "}
                   {formatDate(item.endDate)}
                   <div style={{ marginTop: 6 }}>
-                    <Link href={`/admin/series/${item.id}/sessions`}>
-                      Manage sessions
-                    </Link>
-                    {" · "}
-                    <Link href={`/admin/series/${item.id}/attendance`}>
-                      Attendance
-                    </Link>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <Link href={`/admin/series/${item.id}/sessions`}>
+                        <button type="button" className="secondary">
+                          Manage sessions
+                        </button>
+                      </Link>
+                      <Link href={`/admin/series/${item.id}/attendance`}>
+                        <button type="button" className="secondary">
+                          Attendance
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -48,7 +54,7 @@ export default async function AdminDashboard() {
                     <strong>{formatDateTime(session.startAt)}</strong>
                   </div>
                   <div style={{ color: "var(--muted)" }}>
-                    Series: {session.seriesId}
+                    Series: {seriesById.get(session.seriesId) ?? session.seriesId}
                   </div>
                   <div>
                     <Link href={`/tv/${session.id}`}>Open TV mode</Link>
