@@ -35,11 +35,11 @@ export async function getSession(sessionId: string): Promise<Session | null> {
   return { id: doc.id, ...(doc.data() as SessionRecord) };
 }
 
-export async function createSession(record: Omit<SessionRecord, "createdAt" | "token">) {
+export async function createSession(record: Omit<SessionRecord, "createdAt">) {
   const db = getAdminFirestore();
   const payload: SessionRecord = {
     ...record,
-    token: null,
+    token: record.token ?? null,
     createdAt: new Date() as any
   };
   const ref = await db.collection(COLLECTION).add(payload);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 
 export type TvSessionData = {
@@ -32,6 +32,13 @@ export default function TvSessionDisplay({
 }) {
   const [data, setData] = useState(initialData);
   const [now, setNow] = useState(Date.now());
+  const [pollingActive, setPollingActive] = useState(true);
+  const [pollsRemaining, setPollsRemaining] = useState(16);
+  const pollsRemainingRef = useRef(pollsRemaining);
+
+  useEffect(() => {
+    pollsRemainingRef.current = pollsRemaining;
+  }, [pollsRemaining]);
 
   useEffect(() => {
     const refresh = async () => {
@@ -44,9 +51,26 @@ export default function TvSessionDisplay({
       }
     };
 
-    const intervalId = window.setInterval(refresh, 7000);
+    if (!pollingActive) return;
+
+    const intervalId = window.setInterval(async () => {
+      if (pollsRemainingRef.current <= 0) {
+        setPollingActive(false);
+        return;
+      }
+
+      await refresh();
+      setPollsRemaining((remaining) => {
+        const next = Math.max(remaining - 1, 0);
+        if (next === 0) {
+          setPollingActive(false);
+        }
+        return next;
+      });
+    }, 15000);
+
     return () => window.clearInterval(intervalId);
-  }, [sessionId]);
+  }, [pollingActive, sessionId]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
@@ -100,6 +124,21 @@ export default function TvSessionDisplay({
           "Check-in times not set"
         )}
       </div>
+      {!pollingActive && (
+        <div className="meta">
+          Auto-refresh paused.
+          <button
+            type="button"
+            onClick={() => {
+              setPollsRemaining(16);
+              setPollingActive(true);
+            }}
+            style={{ marginLeft: 12 }}
+          >
+            Resume updates
+          </button>
+        </div>
+      )}
       <div className="meta">Session ID: {data.id}</div>
     </div>
   );

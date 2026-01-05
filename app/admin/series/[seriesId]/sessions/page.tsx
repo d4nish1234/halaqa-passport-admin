@@ -2,11 +2,31 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import crypto from "crypto";
 import { getSeries } from "@/lib/data/series";
-import { createSession, listSessions, updateSessionToken } from "@/lib/data/sessions";
+import { createSession, listSessions } from "@/lib/data/sessions";
 import { formatDateTime, formatTime } from "@/lib/data/format";
 import DeleteSessionButton from "@/components/DeleteSessionButton";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import type { Timestamp } from "firebase-admin/firestore";
+
+type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
+
+function getSessionStatus(
+  checkinOpenAt: Timestamp | Date | null | undefined,
+  checkinCloseAt: Timestamp | Date | null | undefined,
+  now: number
+): SessionStatus {
+  if (!checkinOpenAt || !checkinCloseAt) return "UNKNOWN";
+  const openAt = checkinOpenAt instanceof Date ? checkinOpenAt : checkinOpenAt.toDate();
+  const closeAt =
+    checkinCloseAt instanceof Date ? checkinCloseAt : checkinCloseAt.toDate();
+  const openMs = openAt.getTime();
+  const closeMs = closeAt.getTime();
+
+  if (now < openMs) return "UPCOMING";
+  if (now > closeMs) return "CLOSED";
+  return "OPEN";
+}
 
 export default async function SessionsPage({
   params
@@ -40,23 +60,16 @@ export default async function SessionsPage({
       return;
     }
 
+    const token = crypto.randomBytes(6).toString("hex");
     await createSession({
       seriesId: params.seriesId,
       startAt: new Date(startAt) as any,
       checkinOpenAt: new Date(checkinOpenAt) as any,
       checkinCloseAt: new Date(checkinCloseAt) as any,
+      token,
       createdBy: user.email
     });
 
-    redirect(`/admin/series/${params.seriesId}/sessions`);
-  }
-
-  async function generateTokenAction(formData: FormData) {
-    "use server";
-    const sessionId = String(formData.get("sessionId") ?? "").trim();
-    if (!sessionId) return;
-    const token = crypto.randomBytes(6).toString("hex");
-    await updateSessionToken(sessionId, token);
     redirect(`/admin/series/${params.seriesId}/sessions`);
   }
 
@@ -70,6 +83,22 @@ export default async function SessionsPage({
     redirect("/admin");
   }
 
+  const now = Date.now();
+  const sessionsWithStatus = sessions.map((session) => {
+    const status = getSessionStatus(
+      session.checkinOpenAt,
+      session.checkinCloseAt,
+      now
+    );
+    const badgeClass =
+      status === "CLOSED"
+        ? "badge closed"
+        : status === "UPCOMING"
+        ? "badge upcoming"
+        : "badge";
+    return { session, status, badgeClass };
+  });
+
   return (
     <div className="grid cols-2">
       <section className="card">
@@ -82,27 +111,30 @@ export default async function SessionsPage({
               <tr>
                 <th>Start</th>
                 <th>Check-in</th>
+                <th>Status</th>
                 <th>Token</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              {sessions.map((session) => (
+              {sessionsWithStatus.map(({ session, status, badgeClass }) => (
                 <tr key={session.id}>
                   <td>{formatDateTime(session.startAt)}</td>
                   <td>
                     {formatTime(session.checkinOpenAt)} - {formatTime(session.checkinCloseAt)}
                   </td>
+                  <td>
+                    <span className={badgeClass}>{status}</span>
+                  </td>
                   <td>{session.token ?? "—"}</td>
                   <td>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <form action={generateTokenAction}>
-                        <input type="hidden" name="sessionId" value={session.id} />
-                        <button type="submit" className="secondary">
-                          Generate token
-                        </button>
-                      </form>
-                      <Link href={`/tv/${session.id}`}>TV mode</Link>
+                      <Link
+                        href={`/tv/${session.id}`}
+                        className="button-link secondary"
+                      >
+                        TV mode
+                      </Link>
                       <DeleteSessionButton sessionId={session.id} />
                     </div>
                   </td>
@@ -155,9 +187,6 @@ export default async function SessionsPage({
             Create session
           </button>
         </form>
-        <p style={{ marginTop: 12, color: "var(--muted)" }}>
-          Tokens are generated manually per session to avoid accidental rotation.
-        </p>
       </section>
     </div>
   );
