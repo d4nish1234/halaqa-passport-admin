@@ -1,5 +1,7 @@
 import { listAttendance } from "@/lib/data/attendance";
 import { getSessionUser } from "@/lib/auth/session";
+import { getSeries } from "@/lib/data/series";
+import { isAdminEmail } from "@/lib/auth/admin";
 
 function escapeCsv(value: string) {
   if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
@@ -15,6 +17,14 @@ export async function GET(
   const user = await getSessionUser();
   if (!user) {
     return new Response("Unauthorized", { status: 401 });
+  }
+  const series = await getSeries(params.seriesId);
+  if (!series) {
+    return new Response("Not found", { status: 404 });
+  }
+  const isAdmin = isAdminEmail(user.email ?? "");
+  if (!isAdmin && series.createdBy !== user.email) {
+    return new Response("Forbidden", { status: 403 });
   }
 
   const attendance = await listAttendance(params.seriesId);

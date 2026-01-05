@@ -1,11 +1,20 @@
 import Link from "next/link";
-import { listSeries } from "@/lib/data/series";
+import { listSeriesForUser } from "@/lib/data/series";
 import { listRecentSessions } from "@/lib/data/sessions";
 import { formatDate, formatDateTime } from "@/lib/data/format";
+import { getSessionUser } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
 
 export default async function AdminDashboard() {
-  const series = await listSeries();
-  const recentSessions = await listRecentSessions(5);
+  const user = await getSessionUser();
+  if (!user?.email) {
+    return null;
+  }
+  const isAdmin = isAdminEmail(user.email);
+  const [series, recentSessions] = await Promise.all([
+    listSeriesForUser({ email: user.email, isAdmin }),
+    listRecentSessions({ email: user.email, isAdmin, limit: 5 })
+  ]);
   const activeSeries = series.filter((item) => item.isActive && !item.completed);
   const seriesById = new Map(series.map((item) => [item.id, item.name]));
 
@@ -20,7 +29,9 @@ export default async function AdminDashboard() {
             <ul>
               {activeSeries.map((item) => (
                 <li key={item.id} style={{ marginBottom: 8 }}>
-                  <strong>{item.name}</strong> · {formatDate(item.startDate)}
+                  <strong>{item.name}</strong>
+                  {isAdmin ? ` (${item.createdBy})` : ""} ·{" "}
+                  {formatDate(item.startDate)}
                   <div style={{ marginTop: 6 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Link href={`/admin/series/${item.id}/sessions`}>

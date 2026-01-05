@@ -5,6 +5,8 @@ import { listSessions } from "@/lib/data/sessions";
 import { listAttendance } from "@/lib/data/attendance";
 import { getParticipantsByIds } from "@/lib/data/participants";
 import { formatDateTime } from "@/lib/data/format";
+import { getSessionUser } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
 
 export default async function AttendancePage({
   params
@@ -14,6 +16,14 @@ export default async function AttendancePage({
   const series = await getSeries(params.seriesId);
   if (!series) {
     redirect("/admin/series");
+  }
+  const user = await getSessionUser();
+  if (!user?.email) {
+    redirect("/login");
+  }
+  const isAdmin = isAdminEmail(user.email);
+  if (!isAdmin && series.createdBy !== user.email) {
+    redirect("/admin");
   }
 
   const [sessions, attendance] = await Promise.all([
@@ -82,7 +92,7 @@ export default async function AttendancePage({
       </section>
       <section className="card">
         <h2>Top attendees</h2>
-        {sortedKids.length === 0 ? (
+        {sortedParticipants.length === 0 ? (
           <p>No attendance records yet.</p>
         ) : (
           <table className="table">

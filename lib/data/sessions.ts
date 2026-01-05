@@ -14,13 +14,17 @@ export async function listSessions(seriesId: string): Promise<Session[]> {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as SessionRecord) }));
 }
 
-export async function listRecentSessions(limit = 5): Promise<Session[]> {
+export async function listRecentSessions(params: {
+  limit?: number;
+  email: string;
+  isAdmin: boolean;
+}): Promise<Session[]> {
   const db = getAdminFirestore();
-  const snapshot = await db
-    .collection(COLLECTION)
-    .orderBy("startAt", "desc")
-    .limit(limit)
-    .get();
+  const base = db.collection(COLLECTION).orderBy("startAt", "desc");
+  const query = params.isAdmin
+    ? base
+    : base.where("createdBy", "==", params.email);
+  const snapshot = await query.limit(params.limit ?? 5).get();
   return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as SessionRecord) }));
 }
 

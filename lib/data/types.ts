@@ -5,6 +5,7 @@ export type SeriesRecord = {
   startDate: Timestamp;
   isActive: boolean;
   completed: boolean;
+  createdBy: string;
   createdAt: Timestamp;
 };
 
@@ -14,6 +15,7 @@ export type SessionRecord = {
   checkinOpenAt: Timestamp;
   checkinCloseAt: Timestamp;
   token: string | null;
+  createdBy: string;
   createdAt: Timestamp;
 };
 

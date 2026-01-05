@@ -5,6 +5,8 @@ import { getSeries } from "@/lib/data/series";
 import { createSession, listSessions, updateSessionToken } from "@/lib/data/sessions";
 import { formatDateTime, formatTime } from "@/lib/data/format";
 import DeleteSessionButton from "@/components/DeleteSessionButton";
+import { getSessionUser } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
 
 export default async function SessionsPage({
   params
@@ -18,8 +20,16 @@ export default async function SessionsPage({
 
   async function createSessionAction(formData: FormData) {
     "use server";
+    const user = await getSessionUser();
+    if (!user?.email) return;
     const currentSeries = await getSeries(params.seriesId);
-    if (!currentSeries || !currentSeries.isActive || currentSeries.completed) {
+    const isAdmin = isAdminEmail(user.email);
+    if (
+      !currentSeries ||
+      (!isAdmin && currentSeries.createdBy !== user.email) ||
+      !currentSeries.isActive ||
+      currentSeries.completed
+    ) {
       return;
     }
     const startAt = String(formData.get("startAt") ?? "").trim();
@@ -34,7 +44,8 @@ export default async function SessionsPage({
       seriesId: params.seriesId,
       startAt: new Date(startAt) as any,
       checkinOpenAt: new Date(checkinOpenAt) as any,
-      checkinCloseAt: new Date(checkinCloseAt) as any
+      checkinCloseAt: new Date(checkinCloseAt) as any,
+      createdBy: user.email
     });
 
     redirect(`/admin/series/${params.seriesId}/sessions`);
@@ -50,6 +61,14 @@ export default async function SessionsPage({
   }
 
   const sessions = await listSessions(params.seriesId);
+  const user = await getSessionUser();
+  if (!user?.email) {
+    redirect("/login");
+  }
+  const isAdmin = isAdminEmail(user.email);
+  if (!isAdmin && series.createdBy !== user.email) {
+    redirect("/admin");
+  }
 
   return (
     <div className="grid cols-2">

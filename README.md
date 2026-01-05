@@ -4,7 +4,7 @@ Admin dashboard for managing halaqa series, QR check-ins, and attendance analyti
 
 ## Features
 - Google sign-in with Firebase Auth
-- Admin allowlist via `ADMIN_EMAIL_ALLOWLIST`
+- Admin override via `ADMIN_EMAIL`
 - Series + sessions CRUD (server-side Firestore writes)
 - TV mode QR code display with auto refresh
 - Attendance analytics + CSV export
@@ -34,7 +34,7 @@ FIREBASE_ADMIN_PROJECT_ID=...
 FIREBASE_ADMIN_CLIENT_EMAIL=...
 FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
-ADMIN_EMAIL_ALLOWLIST=admin1@example.com,admin2@example.com
+ADMIN_EMAIL=admin@example.com
 ```
 
 3) Enable Google sign-in in Firebase
@@ -50,15 +50,16 @@ npm run dev
 Open `http://localhost:3000`.
 
 ## Firestore collections
-- `series`: `{ name, startDate, isActive, completed, createdAt }`
-- `sessions`: `{ seriesId, startAt, checkinOpenAt, checkinCloseAt, token, createdAt }`
+- `series`: `{ name, startDate, isActive, completed, createdBy, createdAt }`
+- `sessions`: `{ seriesId, startAt, checkinOpenAt, checkinCloseAt, token, createdBy, createdAt }`
 - `participants` collection stores `{ nickname }` documents
 - `attendance`: `{ participantId, seriesId, sessionId, timestamp }`
 
 ## Auth + security
 - Client uses Firebase Auth (Google) to obtain an ID token.
-- Server creates a session cookie and verifies allowlist on every admin request.
+- Server creates a session cookie.
 - Admin pages are protected server-side; middleware only enforces cookie presence.
+- `ADMIN_EMAIL` can access all series/sessions; other users only see and manage their own.
 - No admin credentials are shipped to the client.
 
 ## Vercel deployment notes

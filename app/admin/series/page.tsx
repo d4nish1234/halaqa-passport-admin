@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createNewSeries, listSeries, updateSeriesStatus } from "@/lib/data/series";
+import { createNewSeries, listSeriesForUser } from "@/lib/data/series";
 import { formatDate } from "@/lib/data/format";
+import { getSessionUser } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
 
 async function createSeriesAction(formData: FormData) {
   "use server";
+  const user = await getSessionUser();
+  if (!user?.email) return;
   const name = String(formData.get("name") ?? "").trim();
   const startDate = String(formData.get("startDate") ?? "").trim();
   const isActive = formData.get("isActive") === "on";
@@ -16,24 +20,20 @@ async function createSeriesAction(formData: FormData) {
   await createNewSeries({
     name,
     startDate: new Date(startDate) as any,
-    isActive
+    isActive,
+    createdBy: user.email
   });
 
   redirect("/admin/series");
 }
 
-async function updateSeriesAction(formData: FormData) {
-  "use server";
-  const seriesId = String(formData.get("seriesId") ?? "").trim();
-  const isActive = formData.get("isActive") === "on";
-  const completed = formData.get("completed") === "on";
-  if (!seriesId) return;
-  await updateSeriesStatus(seriesId, { isActive, completed });
-  redirect("/admin/series");
-}
-
 export default async function SeriesPage() {
-  const series = await listSeries();
+  const user = await getSessionUser();
+  if (!user?.email) {
+    return null;
+  }
+  const isAdmin = isAdminEmail(user.email);
+  const series = await listSeriesForUser({ email: user.email, isAdmin });
 
   return (
     <div className="grid cols-2">
@@ -71,44 +71,11 @@ export default async function SeriesPage() {
                           Attendance
                         </button>
                       </Link>
-                      <form action={updateSeriesAction}>
-                        <input type="hidden" name="seriesId" value={item.id} />
-                        <label
-                          style={{
-                            display: "flex",
-                            gap: 6,
-                            alignItems: "center",
-                            marginBottom: 6
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            name="isActive"
-                            defaultChecked={item.isActive}
-                            style={{ width: "auto" }}
-                          />
-                          Active
-                        </label>
-                        <label
-                          style={{
-                            display: "flex",
-                            gap: 6,
-                            alignItems: "center",
-                            marginBottom: 6
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            name="completed"
-                            defaultChecked={item.completed}
-                            style={{ width: "auto" }}
-                          />
-                          Completed
-                        </label>
-                        <button type="submit" className="secondary">
-                          Update
+                      <Link href={`/admin/series/${item.id}/edit`}>
+                        <button type="button" className="secondary">
+                          Edit
                         </button>
-                      </form>
+                      </Link>
                     </div>
                   </td>
                 </tr>

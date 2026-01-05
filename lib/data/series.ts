@@ -9,6 +9,19 @@ export async function listSeries(): Promise<Series[]> {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as SeriesRecord) }));
 }
 
+export async function listSeriesForUser(params: {
+  email: string;
+  isAdmin: boolean;
+}): Promise<Series[]> {
+  const db = getAdminFirestore();
+  const base = db.collection(COLLECTION).orderBy("createdAt", "desc");
+  const query = params.isAdmin
+    ? base
+    : base.where("createdBy", "==", params.email);
+  const snapshot = await query.get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as SeriesRecord) }));
+}
+
 export async function getSeries(seriesId: string): Promise<Series | null> {
   const db = getAdminFirestore();
   const doc = await db.collection(COLLECTION).doc(seriesId).get();
@@ -41,4 +54,15 @@ export async function updateSeriesStatus(
     ? { ...updates, isActive: false }
     : updates;
   await db.collection(COLLECTION).doc(seriesId).update(payload);
+}
+
+export async function updateSeriesDetails(
+  seriesId: string,
+  updates: { name: string; startDate: Date }
+) {
+  const db = getAdminFirestore();
+  await db.collection(COLLECTION).doc(seriesId).update({
+    name: updates.name,
+    startDate: updates.startDate as any
+  });
 }
