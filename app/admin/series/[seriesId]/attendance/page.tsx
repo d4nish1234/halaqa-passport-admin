@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSeries } from "@/lib/data/series";
 import { listSessions } from "@/lib/data/sessions";
 import { listAttendance } from "@/lib/data/attendance";
-import { getKidsByIds } from "@/lib/data/kids";
+import { getParticipantsByIds } from "@/lib/data/participants";
 import { formatDateTime } from "@/lib/data/format";
 
 export default async function AttendancePage({
@@ -20,28 +20,33 @@ export default async function AttendancePage({
     listSessions(params.seriesId),
     listAttendance(params.seriesId)
   ]);
-  const kidIds = attendance.map((record) => record.kidId);
-  const kidsById = await getKidsByIds(kidIds);
+  const participantIds = attendance.map((record) => record.participantId);
+  const participantsById = await getParticipantsByIds(participantIds);
 
   const sessionCounts = new Map<string, number>();
-  const kidCounts = new Map<string, number>();
+  const participantCounts = new Map<string, number>();
 
   for (const record of attendance) {
     sessionCounts.set(
       record.sessionId,
       (sessionCounts.get(record.sessionId) ?? 0) + 1
     );
-    kidCounts.set(record.kidId, (kidCounts.get(record.kidId) ?? 0) + 1);
+    participantCounts.set(
+      record.participantId,
+      (participantCounts.get(record.participantId) ?? 0) + 1
+    );
   }
 
-  const sortedKids = [...kidCounts.entries()].sort((a, b) => b[1] - a[1]);
-  const perfectAttendance = sortedKids.filter(
+  const sortedParticipants = [...participantCounts.entries()].sort(
+    (a, b) => b[1] - a[1]
+  );
+  const perfectAttendance = sortedParticipants.filter(
     ([, count]) => count === sessions.length && sessions.length > 0
   );
-  const displayName = (kidId: string) => {
-    const nickname = kidsById.get(kidId)?.nickname?.trim();
-    const suffix = kidId.slice(-4);
-    if (!nickname) return kidId;
+  const displayName = (participantId: string) => {
+    const nickname = participantsById.get(participantId)?.nickname?.trim();
+    const suffix = participantId.slice(-4);
+    if (!nickname) return participantId;
     return `${nickname} (${suffix})`;
   };
 
@@ -88,9 +93,9 @@ export default async function AttendancePage({
               </tr>
             </thead>
             <tbody>
-              {sortedKids.slice(0, 10).map(([kidId, count]) => (
-                <tr key={kidId}>
-                  <td>{displayName(kidId)}</td>
+              {sortedParticipants.slice(0, 10).map(([participantId, count]) => (
+                <tr key={participantId}>
+                  <td>{displayName(participantId)}</td>
                   <td>{count}</td>
                 </tr>
               ))}
@@ -102,8 +107,8 @@ export default async function AttendancePage({
           <p>No perfect attendance yet.</p>
         ) : (
           <ul>
-            {perfectAttendance.map(([kidId]) => (
-              <li key={kidId}>{displayName(kidId)}</li>
+            {perfectAttendance.map(([participantId]) => (
+              <li key={participantId}>{displayName(participantId)}</li>
             ))}
           </ul>
         )}

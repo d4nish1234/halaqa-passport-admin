@@ -3,8 +3,8 @@ import type { Timestamp } from "firebase-admin/firestore";
 export type SeriesRecord = {
   name: string;
   startDate: Timestamp;
-  endDate: Timestamp;
   isActive: boolean;
+  completed: boolean;
   createdAt: Timestamp;
 };
 
@@ -18,7 +18,7 @@ export type SessionRecord = {
 };
 
 export type AttendanceRecord = {
-  kidId: string;
+  participantId: string;
   seriesId: string;
   sessionId: string;
   timestamp: Timestamp;

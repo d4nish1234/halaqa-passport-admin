@@ -25,3 +25,20 @@ export async function createSeries(record: Omit<SeriesRecord, "createdAt">) {
   const ref = await db.collection(COLLECTION).add(payload);
   return ref.id;
 }
+
+export async function createNewSeries(
+  record: Omit<SeriesRecord, "createdAt" | "completed">
+) {
+  return createSeries({ ...record, completed: false });
+}
+
+export async function updateSeriesStatus(
+  seriesId: string,
+  updates: { isActive: boolean; completed: boolean }
+) {
+  const db = getAdminFirestore();
+  const payload = updates.completed
+    ? { ...updates, isActive: false }
+    : updates;
+  await db.collection(COLLECTION).doc(seriesId).update(payload);
+}

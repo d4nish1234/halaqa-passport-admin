@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { getSeries } from "@/lib/data/series";
 import { createSession, listSessions, updateSessionToken } from "@/lib/data/sessions";
 import { formatDateTime, formatTime } from "@/lib/data/format";
+import DeleteSessionButton from "@/components/DeleteSessionButton";
 
 export default async function SessionsPage({
   params
@@ -17,6 +18,10 @@ export default async function SessionsPage({
 
   async function createSessionAction(formData: FormData) {
     "use server";
+    const currentSeries = await getSeries(params.seriesId);
+    if (!currentSeries || !currentSeries.isActive || currentSeries.completed) {
+      return;
+    }
     const startAt = String(formData.get("startAt") ?? "").trim();
     const checkinOpenAt = String(formData.get("checkinOpenAt") ?? "").trim();
     const checkinCloseAt = String(formData.get("checkinCloseAt") ?? "").trim();
@@ -79,6 +84,7 @@ export default async function SessionsPage({
                         </button>
                       </form>
                       <Link href={`/tv/${session.id}`}>TV mode</Link>
+                      <DeleteSessionButton sessionId={session.id} />
                     </div>
                   </td>
                 </tr>
@@ -89,20 +95,46 @@ export default async function SessionsPage({
       </section>
       <section className="card">
         <h2>Create session</h2>
+        {!series.isActive || series.completed ? (
+          <p style={{ color: "var(--muted)" }}>
+            This series is inactive or completed. Reactivate it to create new
+            sessions.
+          </p>
+        ) : null}
         <form action={createSessionAction}>
           <label>
             Session start
-            <input type="datetime-local" name="startAt" required />
+            <input
+              type="datetime-local"
+              name="startAt"
+              required
+              disabled={!series.isActive || series.completed}
+            />
           </label>
           <label>
             Check-in opens
-            <input type="datetime-local" name="checkinOpenAt" required />
+            <input
+              type="datetime-local"
+              name="checkinOpenAt"
+              required
+              disabled={!series.isActive || series.completed}
+            />
           </label>
           <label>
             Check-in closes
-            <input type="datetime-local" name="checkinCloseAt" required />
+            <input
+              type="datetime-local"
+              name="checkinCloseAt"
+              required
+              disabled={!series.isActive || series.completed}
+            />
           </label>
-          <button type="submit">Create session</button>
+          <button
+            type="submit"
+            disabled={!series.isActive || series.completed}
+          >
+            Create session
+          </button>
         </form>
         <p style={{ marginTop: 12, color: "var(--muted)" }}>
           Tokens are generated manually per session to avoid accidental rotation.

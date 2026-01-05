@@ -1,26 +1,34 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createSeries, listSeries } from "@/lib/data/series";
+import { createNewSeries, listSeries, updateSeriesStatus } from "@/lib/data/series";
 import { formatDate } from "@/lib/data/format";
 
 async function createSeriesAction(formData: FormData) {
   "use server";
   const name = String(formData.get("name") ?? "").trim();
   const startDate = String(formData.get("startDate") ?? "").trim();
-  const endDate = String(formData.get("endDate") ?? "").trim();
   const isActive = formData.get("isActive") === "on";
 
-  if (!name || !startDate || !endDate) {
+  if (!name || !startDate) {
     return;
   }
 
-  await createSeries({
+  await createNewSeries({
     name,
     startDate: new Date(startDate) as any,
-    endDate: new Date(endDate) as any,
     isActive
   });
 
+  redirect("/admin/series");
+}
+
+async function updateSeriesAction(formData: FormData) {
+  "use server";
+  const seriesId = String(formData.get("seriesId") ?? "").trim();
+  const isActive = formData.get("isActive") === "on";
+  const completed = formData.get("completed") === "on";
+  if (!seriesId) return;
+  await updateSeriesStatus(seriesId, { isActive, completed });
   redirect("/admin/series");
 }
 
@@ -38,7 +46,7 @@ export default async function SeriesPage() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Dates</th>
+                <th>Start</th>
                 <th>Status</th>
                 <th />
               </tr>
@@ -47,10 +55,10 @@ export default async function SeriesPage() {
               {series.map((item) => (
                 <tr key={item.id}>
                   <td>{item.name}</td>
+                  <td>{formatDate(item.startDate)}</td>
                   <td>
-                    {formatDate(item.startDate)} - {formatDate(item.endDate)}
+                    {item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"}
                   </td>
-                  <td>{item.isActive ? "Active" : "Inactive"}</td>
                   <td>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Link href={`/admin/series/${item.id}/sessions`}>
@@ -63,6 +71,44 @@ export default async function SeriesPage() {
                           Attendance
                         </button>
                       </Link>
+                      <form action={updateSeriesAction}>
+                        <input type="hidden" name="seriesId" value={item.id} />
+                        <label
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            marginBottom: 6
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            name="isActive"
+                            defaultChecked={item.isActive}
+                            style={{ width: "auto" }}
+                          />
+                          Active
+                        </label>
+                        <label
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            marginBottom: 6
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            name="completed"
+                            defaultChecked={item.completed}
+                            style={{ width: "auto" }}
+                          />
+                          Completed
+                        </label>
+                        <button type="submit" className="secondary">
+                          Update
+                        </button>
+                      </form>
                     </div>
                   </td>
                 </tr>
@@ -81,10 +127,6 @@ export default async function SeriesPage() {
           <label>
             Start date
             <input type="date" name="startDate" required />
-          </label>
-          <label>
-            End date
-            <input type="date" name="endDate" required />
           </label>
           <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input type="checkbox" name="isActive" style={{ width: "auto" }} />

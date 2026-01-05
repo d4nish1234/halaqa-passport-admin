@@ -1,5 +1,6 @@
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import type { Session, SessionRecord } from "@/lib/data/types";
+import { deleteAttendanceForSession } from "@/lib/data/attendance";
 
 const COLLECTION = "sessions";
 
@@ -44,4 +45,10 @@ export async function createSession(record: Omit<SessionRecord, "createdAt" | "t
 export async function updateSessionToken(sessionId: string, token: string) {
   const db = getAdminFirestore();
   await db.collection(COLLECTION).doc(sessionId).update({ token });
+}
+
+export async function deleteSessionWithAttendance(sessionId: string) {
+  const db = getAdminFirestore();
+  await deleteAttendanceForSession(sessionId);
+  await db.collection(COLLECTION).doc(sessionId).delete();
 }

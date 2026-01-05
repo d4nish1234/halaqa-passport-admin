@@ -6,7 +6,7 @@ import { formatDate, formatDateTime } from "@/lib/data/format";
 export default async function AdminDashboard() {
   const series = await listSeries();
   const recentSessions = await listRecentSessions(5);
-  const activeSeries = series.filter((item) => item.isActive);
+  const activeSeries = series.filter((item) => item.isActive && !item.completed);
   const seriesById = new Map(series.map((item) => [item.id, item.name]));
 
   return (
@@ -21,8 +21,6 @@ export default async function AdminDashboard() {
               {activeSeries.map((item) => (
                 <li key={item.id} style={{ marginBottom: 8 }}>
                   <strong>{item.name}</strong> · {formatDate(item.startDate)}
-                  {" - "}
-                  {formatDate(item.endDate)}
                   <div style={{ marginTop: 6 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Link href={`/admin/series/${item.id}/sessions`}>

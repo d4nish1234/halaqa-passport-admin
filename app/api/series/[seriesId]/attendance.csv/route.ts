@@ -18,7 +18,7 @@ export async function GET(
   }
 
   const attendance = await listAttendance(params.seriesId);
-  const headers = ["kidId", "seriesId", "sessionId", "timestamp"];
+  const headers = ["participantId", "seriesId", "sessionId", "timestamp"];
   const lines = [headers.join(",")];
 
   for (const record of attendance) {
@@ -26,7 +26,7 @@ export async function GET(
       ? record.timestamp.toDate().toISOString()
       : "";
     const row = [
-      record.kidId,
+      record.participantId,
       record.seriesId,
       record.sessionId,
       timestamp

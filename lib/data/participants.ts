@@ -4,7 +4,7 @@ type KidRecord = {
   nickname?: string;
 };
 
-const COLLECTION = "kids";
+const COLLECTION = "participants";
 
 function chunk<T>(items: T[], size: number) {
   const result: T[][] = [];
@@ -14,7 +14,7 @@ function chunk<T>(items: T[], size: number) {
   return result;
 }
 
-export async function getKidsByIds(ids: string[]) {
+export async function getParticipantsByIds(ids: string[]) {
   const db = getAdminFirestore();
   const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
   const result = new Map<string, KidRecord>();

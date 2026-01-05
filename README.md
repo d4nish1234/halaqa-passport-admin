@@ -50,9 +50,10 @@ npm run dev
 Open `http://localhost:3000`.
 
 ## Firestore collections
-- `series`: `{ name, startDate, endDate, isActive, createdAt }`
+- `series`: `{ name, startDate, isActive, completed, createdAt }`
 - `sessions`: `{ seriesId, startAt, checkinOpenAt, checkinCloseAt, token, createdAt }`
-- `attendance`: `{ kidId, seriesId, sessionId, timestamp }`
+- `participants` collection stores `{ nickname }` documents
+- `attendance`: `{ participantId, seriesId, sessionId, timestamp }`
 
 ## Auth + security
 - Client uses Firebase Auth (Google) to obtain an ID token.
