@@ -35,8 +35,9 @@ export default function LoginPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed.";
       setError(message);
-    } finally {
       setLoading(false);
+    } finally {
+      // Keep the spinner active while the redirect completes.
     }
   };
 
@@ -49,8 +50,20 @@ export default function LoginPage() {
         <section className="card" style={{ maxWidth: 480 }}>
           <h2>Sign in</h2>
           <p>Use your organization Google account to continue.</p>
-          <button onClick={handleSignIn} disabled={loading}>
-            {loading ? "Signing in..." : "Sign in with Google"}
+          <button
+            onClick={handleSignIn}
+            disabled={loading}
+            className={loading ? "loading" : undefined}
+            aria-busy={loading}
+          >
+            {loading ? (
+              <>
+                <span className="button-spinner" aria-hidden="true" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              "Sign in with Google"
+            )}
           </button>
           {error && (
             <p style={{ color: "#8a2b2b", marginTop: 12 }}>{error}</p>
