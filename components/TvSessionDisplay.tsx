@@ -11,6 +11,7 @@ export type TvSessionData = {
   checkinOpenAt: string | null;
   checkinCloseAt: string | null;
   token: string | null;
+  serverTime?: string | null;
 };
 
 function getStatus(data: TvSessionData, now: number) {
@@ -87,6 +88,25 @@ export default function TvSessionDisplay({
       }),
     [data]
   );
+  const serverTimeEasternLabel = useMemo(() => {
+    if (!data.serverTime) return null;
+    const date = new Date(data.serverTime);
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short"
+    }).format(date);
+  }, [data.serverTime]);
+  const serverTimeUtcLabel = useMemo(() => {
+    if (!data.serverTime) return null;
+    const date = new Date(data.serverTime);
+    return date.toUTCString();
+  }, [data.serverTime]);
 
   return (
     <div className="tv-shell">
@@ -124,6 +144,11 @@ export default function TvSessionDisplay({
           "Check-in times not set"
         )}
       </div>
+      {serverTimeEasternLabel && serverTimeUtcLabel && (
+        <div className="meta">
+          Server time: {serverTimeEasternLabel} | {serverTimeUtcLabel}
+        </div>
+      )}
       {!pollingActive && (
         <div className="meta">
           Auto-refresh paused.

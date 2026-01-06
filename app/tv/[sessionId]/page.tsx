@@ -31,7 +31,8 @@ export default async function TvPage({
     startAt: toIso(session.startAt),
     checkinOpenAt: toIso(session.checkinOpenAt),
     checkinCloseAt: toIso(session.checkinCloseAt),
-    token: session.token
+    token: session.token,
+    serverTime: new Date().toISOString()
   };
 
   return <TvSessionDisplay sessionId={params.sessionId} initialData={data} />;

@@ -27,7 +27,8 @@ export async function GET(
     startAt: toIso(session.startAt),
     checkinOpenAt: toIso(session.checkinOpenAt),
     checkinCloseAt: toIso(session.checkinCloseAt),
-    token: session.token
+    token: session.token,
+    serverTime: new Date().toISOString()
   });
 }
 

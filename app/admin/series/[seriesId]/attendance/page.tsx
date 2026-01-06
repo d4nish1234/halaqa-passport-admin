@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSeries } from "@/lib/data/series";
 import { listSessions } from "@/lib/data/sessions";
@@ -7,6 +6,7 @@ import { getParticipantsByIds } from "@/lib/data/participants";
 import { formatDateTime } from "@/lib/data/format";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import AttendanceExportLink from "@/components/AttendanceExportLink";
 
 export default async function AttendancePage({
   params
@@ -65,9 +65,7 @@ export default async function AttendancePage({
       <section className="card">
         <h2>Attendance for {series.name}</h2>
         <div style={{ marginBottom: 12 }}>
-          <Link href={`/api/series/${params.seriesId}/attendance.csv`}>
-            Export CSV
-          </Link>
+          <AttendanceExportLink seriesId={params.seriesId} />
         </div>
         {sessions.length === 0 ? (
           <p>No sessions yet.</p>
