@@ -35,5 +35,12 @@ export default async function TvPage({
     serverTime: new Date().toISOString()
   };
 
-  return <TvSessionDisplay sessionId={params.sessionId} initialData={data} />;
+  return (
+    <TvSessionDisplay
+      sessionId={params.sessionId}
+      initialData={data}
+      androidAppUrl={process.env.NEXT_PUBLIC_ANDROID_APP_URL}
+      iosAppUrl={process.env.NEXT_PUBLIC_IOS_APP_URL}
+    />
+  );
 }

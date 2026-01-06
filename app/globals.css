@@ -220,6 +220,21 @@ form {
   color: var(--muted);
 }
 
+.tv-app-qr {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 156px;
+  flex-wrap: wrap;
+}
+
+.tv-app-qr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 @media (max-width: 640px) {
   header {
     flex-direction: column;

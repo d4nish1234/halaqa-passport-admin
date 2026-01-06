@@ -26,15 +26,20 @@ function getStatus(data: TvSessionData, now: number) {
 
 export default function TvSessionDisplay({
   sessionId,
-  initialData
+  initialData,
+  androidAppUrl,
+  iosAppUrl
 }: {
   sessionId: string;
   initialData: TvSessionData;
+  androidAppUrl?: string | null;
+  iosAppUrl?: string | null;
 }) {
   const [data, setData] = useState(initialData);
   const [now, setNow] = useState(Date.now());
   const [pollingActive, setPollingActive] = useState(true);
   const [pollsRemaining, setPollsRemaining] = useState(16);
+  const [qrMode, setQrMode] = useState<"session" | "apps">("session");
   const pollsRemainingRef = useRef(pollsRemaining);
 
   useEffect(() => {
@@ -107,18 +112,23 @@ export default function TvSessionDisplay({
     const date = new Date(data.serverTime);
     return date.toUTCString();
   }, [data.serverTime]);
+  const androidUrl = androidAppUrl?.trim() ?? "";
+  const iosUrl = iosAppUrl?.trim() ?? "";
+  const hasAppLinks = Boolean(androidUrl || iosUrl);
 
   return (
     <div className="tv-shell">
       <h1>{data.seriesName ?? "Halaqa Passport"}</h1>
       <div>
-        <QRCodeCanvas
-          value={payload}
-          size={360}
-          bgColor="#ffffff"
-          fgColor="#1b1a17"
-          level="H"
-        />
+        {qrMode === "session" ? (
+          <QRCodeCanvas
+            value={payload}
+            size={360}
+            bgColor="#ffffff"
+            fgColor="#1b1a17"
+            level="H"
+          />
+        ) : null}
       </div>
       <div className="status">
         <span
@@ -164,7 +174,55 @@ export default function TvSessionDisplay({
           </button>
         </div>
       )}
+      <div className="meta">
+        <button
+          type="button"
+          className="secondary"
+          disabled={!hasAppLinks}
+          onClick={() =>
+            setQrMode((mode) => (mode === "session" ? "apps" : "session"))
+          }
+        >
+          {qrMode === "session" ? "Show app downloads" : "Show session QR"}
+        </button>
+      </div>
       <div className="meta">Session ID: {data.id}</div>
+      {qrMode === "apps" && (
+        <div className="tv-app-qr">
+          <div className="tv-app-qr-item">
+            {androidUrl ? (
+              <QRCodeCanvas
+                value={androidUrl}
+                size={280}
+                bgColor="#ffffff"
+                fgColor="#1b1a17"
+                level="H"
+              />
+            ) : (
+              <div className="meta">Android link not set</div>
+            )}
+            <div className="meta" style={{ marginTop: 8 }}>
+              Android app
+            </div>
+          </div>
+          <div className="tv-app-qr-item">
+            {iosUrl ? (
+              <QRCodeCanvas
+                value={iosUrl}
+                size={280}
+                bgColor="#ffffff"
+                fgColor="#1b1a17"
+                level="H"
+              />
+            ) : (
+              <div className="meta">iOS link not set</div>
+            )}
+            <div className="meta" style={{ marginTop: 8 }}>
+              iOS app
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
