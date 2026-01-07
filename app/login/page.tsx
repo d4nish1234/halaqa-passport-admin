@@ -49,7 +49,7 @@ export default function LoginPage() {
       <main>
         <section className="card" style={{ maxWidth: 480 }}>
           <h2>Sign in</h2>
-          <p>Use your organization Google account to continue.</p>
+          <p>Use your Google account to Sign up or Sign in.</p>
           <button
             onClick={handleSignIn}
             disabled={loading}
