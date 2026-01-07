@@ -14,6 +14,16 @@ export type TvSessionData = {
   serverTime?: string | null;
 };
 
+type LeaderboardEntry = {
+  participantId: string;
+  nickname: string | null;
+  count: number;
+};
+
+type LeaderboardResponse = {
+  leaderboard: LeaderboardEntry[];
+};
+
 function getStatus(data: TvSessionData, now: number) {
   if (!data.checkinOpenAt || !data.checkinCloseAt) return "UNKNOWN";
   const openAt = new Date(data.checkinOpenAt).getTime();
@@ -39,12 +49,19 @@ export default function TvSessionDisplay({
   const [now, setNow] = useState(Date.now());
   const [pollingActive, setPollingActive] = useState(true);
   const [pollsRemaining, setPollsRemaining] = useState(16);
+  const [leaderboardPollsRemaining, setLeaderboardPollsRemaining] = useState(8);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [qrMode, setQrMode] = useState<"session" | "apps">("session");
   const pollsRemainingRef = useRef(pollsRemaining);
+  const leaderboardPollsRemainingRef = useRef(leaderboardPollsRemaining);
 
   useEffect(() => {
     pollsRemainingRef.current = pollsRemaining;
   }, [pollsRemaining]);
+
+  useEffect(() => {
+    leaderboardPollsRemainingRef.current = leaderboardPollsRemaining;
+  }, [leaderboardPollsRemaining]);
 
   useEffect(() => {
     const refresh = async () => {
@@ -77,6 +94,34 @@ export default function TvSessionDisplay({
 
     return () => window.clearInterval(intervalId);
   }, [pollingActive, sessionId]);
+
+  useEffect(() => {
+    if (!pollingActive) return;
+
+    const refreshLeaderboard = async () => {
+      const response = await fetch(`/api/series/${data.seriesId}/leaderboard`, {
+        cache: "no-store"
+      });
+      if (response.ok) {
+        const payload = (await response.json()) as LeaderboardResponse;
+        setLeaderboard(payload.leaderboard ?? []);
+      }
+    };
+
+    const intervalId = window.setInterval(async () => {
+      if (leaderboardPollsRemainingRef.current <= 0) {
+        return;
+      }
+
+      await refreshLeaderboard();
+      setLeaderboardPollsRemaining((remaining) => Math.max(remaining - 1, 0));
+    }, 30000);
+
+    refreshLeaderboard();
+    setLeaderboardPollsRemaining((remaining) => Math.max(remaining - 1, 0));
+
+    return () => window.clearInterval(intervalId);
+  }, [data.seriesId, pollingActive]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
@@ -119,17 +164,6 @@ export default function TvSessionDisplay({
   return (
     <div className="tv-shell">
       <h1>{data.seriesName ?? "Halaqa Passport"}</h1>
-      <div>
-        {qrMode === "session" ? (
-          <QRCodeCanvas
-            value={payload}
-            size={360}
-            bgColor="#ffffff"
-            fgColor="#1b1a17"
-            level="H"
-          />
-        ) : null}
-      </div>
       <div className="status">
         <span
           className={`badge ${
@@ -154,6 +188,44 @@ export default function TvSessionDisplay({
           "Check-in times not set"
         )}
       </div>
+      <div className="meta">
+        Bring the same phone to your next session. Deleting the app will reset
+        progress.
+      </div>
+      <div className="tv-main">
+        <div className="tv-qr">
+          {qrMode === "session" ? (
+            <QRCodeCanvas
+              value={payload}
+              size={360}
+              bgColor="#ffffff"
+              fgColor="#1b1a17"
+              level="H"
+            />
+          ) : null}
+        </div>
+        <div className="tv-leaderboard">
+          <div className="meta">Series leaderboard (so far)</div>
+          {leaderboard.length === 0 ? (
+            <div className="meta">No attendance yet.</div>
+          ) : (
+            <div className="tv-leaderboard-list">
+              {leaderboard.map((entry) => {
+                const suffix = entry.participantId.slice(-4);
+                const name = entry.nickname?.trim()
+                  ? `${entry.nickname} (${suffix})`
+                  : `Participant (${suffix})`;
+                return (
+                  <div key={entry.participantId} className="tv-leaderboard-row">
+                    <span>{name}</span>
+                    <span>{entry.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
       {serverTimeEasternLabel && serverTimeUtcLabel && (
         <div className="meta">
           Server time: {serverTimeEasternLabel} | {serverTimeUtcLabel}
@@ -166,6 +238,7 @@ export default function TvSessionDisplay({
             type="button"
             onClick={() => {
               setPollsRemaining(16);
+              setLeaderboardPollsRemaining(8);
               setPollingActive(true);
             }}
             style={{ marginLeft: 12 }}
@@ -186,7 +259,6 @@ export default function TvSessionDisplay({
           {qrMode === "session" ? "Show app downloads" : "Show session QR"}
         </button>
       </div>
-      <div className="meta">Session ID: {data.id}</div>
       {qrMode === "apps" && (
         <div className="tv-app-qr">
           <div className="tv-app-qr-item">

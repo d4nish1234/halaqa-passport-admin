@@ -201,7 +201,7 @@ form {
   background: radial-gradient(circle at top, #fcf9f2 0%, #efe8d8 60%, #e3dbc6 100%);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 24px;
   text-align: center;
@@ -220,6 +220,20 @@ form {
   color: var(--muted);
 }
 
+.tv-main {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tv-qr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .tv-app-qr {
   margin-top: 12px;
   display: flex;
@@ -233,6 +247,25 @@ form {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.tv-leaderboard {
+  width: min(360px, 90vw);
+  margin-top: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.tv-leaderboard-list {
+  display: grid;
+  gap: 6px;
+}
+
+.tv-leaderboard-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 16px;
 }
 
 @media (max-width: 640px) {
