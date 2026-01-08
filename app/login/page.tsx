@@ -10,12 +10,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSignIn = async () => {
+  const handleSignIn = async (provider: GoogleAuthProvider) => {
     setError(null);
     setLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
+      if (provider instanceof GoogleAuthProvider) {
+        provider.setCustomParameters({ prompt: "select_account" });
+      }
       const auth = getFirebaseAuth();
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
@@ -51,7 +52,7 @@ export default function LoginPage() {
           <h2>Sign in</h2>
           <p>Use your Google account to Sign up or Sign in.</p>
           <button
-            onClick={handleSignIn}
+            onClick={() => handleSignIn(new GoogleAuthProvider())}
             disabled={loading}
             className={loading ? "loading" : undefined}
             aria-busy={loading}

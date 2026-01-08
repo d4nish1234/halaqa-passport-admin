@@ -113,7 +113,6 @@ export default async function SessionsPage({
                 <th>Start</th>
                 <th>Check-in</th>
                 <th>Status</th>
-                <th>Token</th>
                 <th />
               </tr>
             </thead>
@@ -127,7 +126,6 @@ export default async function SessionsPage({
                   <td>
                     <span className={badgeClass}>{status}</span>
                   </td>
-                  <td>{session.token ?? "—"}</td>
                   <td>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Link
