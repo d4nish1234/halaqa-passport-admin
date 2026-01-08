@@ -60,28 +60,35 @@ export default async function SeriesPage() {
                     {item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"}
                   </td>
                   <td>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Link href={`/admin/series/${item.id}/sessions`}>
-                        <button type="button" className="secondary">
+                    <details className="action-menu">
+                      <summary className="action-menu-trigger">...</summary>
+                      <div className="action-menu-items">
+                        <Link
+                          href={`/admin/series/${item.id}/sessions`}
+                          className="action-menu-item"
+                        >
                           Sessions
-                        </button>
-                      </Link>
-                      <Link href={`/admin/series/${item.id}/attendance`}>
-                        <button type="button" className="secondary">
+                        </Link>
+                        <Link
+                          href={`/admin/series/${item.id}/attendance`}
+                          className="action-menu-item"
+                        >
                           Attendance
-                        </button>
-                      </Link>
-                      <Link href={`/admin/series/${item.id}/rewards`}>
-                        <button type="button" className="secondary">
+                        </Link>
+                        <Link
+                          href={`/admin/series/${item.id}/rewards`}
+                          className="action-menu-item"
+                        >
                           Rewards
-                        </button>
-                      </Link>
-                      <Link href={`/admin/series/${item.id}/edit`}>
-                        <button type="button" className="secondary">
+                        </Link>
+                        <Link
+                          href={`/admin/series/${item.id}/edit`}
+                          className="action-menu-item"
+                        >
                           Edit
-                        </button>
-                      </Link>
-                    </div>
+                        </Link>
+                      </div>
+                    </details>
                   </td>
                 </tr>
               ))}

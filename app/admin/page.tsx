@@ -28,24 +28,38 @@ export default async function AdminDashboard() {
           ) : (
             <ul>
               {activeSeries.map((item) => (
-                <li key={item.id} style={{ marginBottom: 8 }}>
-                  <strong>{item.name}</strong>
-                  {isAdmin ? ` (${item.createdBy})` : ""} ·{" "}
-                  {formatDate(item.startDate)}
-                  <div style={{ marginTop: 6 }}>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Link href={`/admin/series/${item.id}/sessions`}>
-                        <button type="button" className="secondary">
-                          Manage sessions
-                        </button>
+                <li
+                  key={item.id}
+                  style={{
+                    marginBottom: 8,
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 12
+                  }}
+                >
+                  <div>
+                    <strong>{item.name}</strong>
+                    {isAdmin ? ` (${item.createdBy})` : ""} ·{" "}
+                    {formatDate(item.startDate)}
+                  </div>
+                  <details className="action-menu">
+                    <summary className="action-menu-trigger">...</summary>
+                    <div className="action-menu-items">
+                      <Link
+                        href={`/admin/series/${item.id}/sessions`}
+                        className="action-menu-item"
+                      >
+                        Manage sessions
                       </Link>
-                      <Link href={`/admin/series/${item.id}/attendance`}>
-                        <button type="button" className="secondary">
-                          Attendance
-                        </button>
+                      <Link
+                        href={`/admin/series/${item.id}/attendance`}
+                        className="action-menu-item"
+                      >
+                        Attendance
                       </Link>
                     </div>
-                  </div>
+                  </details>
                 </li>
               ))}
             </ul>

@@ -143,6 +143,64 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.action-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.action-menu summary {
+  list-style: none;
+}
+
+.action-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.action-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.action-menu[open] .action-menu-trigger {
+  background: #fff;
+}
+
+.action-menu-items {
+  position: absolute;
+  right: 0;
+  margin-top: 6px;
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 30px rgba(31, 22, 10, 0.12);
+  padding: 6px;
+  display: grid;
+  gap: 4px;
+  z-index: 10;
+}
+
+.action-menu-item {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.action-menu-item:hover {
+  background: #f6f2e8;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
