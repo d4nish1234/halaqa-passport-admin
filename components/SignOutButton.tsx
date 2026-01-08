@@ -5,7 +5,13 @@ import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase/client";
 
-export default function SignOutButton() {
+export default function SignOutButton({
+  className,
+  label
+}: {
+  className?: string;
+  label?: string;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -23,10 +29,10 @@ export default function SignOutButton() {
     <button
       type="button"
       onClick={handleSignOut}
-      className="secondary"
+      className={className ?? "secondary"}
       disabled={loading}
     >
-      {loading ? "Signing out..." : "Sign out"}
+      {loading ? "Signing out..." : label ?? "Sign out"}
     </button>
   );
 }

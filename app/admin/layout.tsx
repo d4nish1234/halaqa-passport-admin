@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
-import SignOutButton from "@/components/SignOutButton";
+import AccountMenu from "@/components/AccountMenu";
 
 export default async function AdminLayout({
   children
@@ -20,10 +20,12 @@ export default async function AdminLayout({
         <nav>
           <Link href="/admin">Dashboard</Link>
           <Link href="/admin/series">Series</Link>
-          <SignOutButton />
+          <AccountMenu email={user.email ?? ""} />
         </nav>
       </header>
-      <main>{children}</main>
+      <main>
+        {children}
+      </main>
     </>
   );
 }
