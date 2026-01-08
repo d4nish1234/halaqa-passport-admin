@@ -50,13 +50,31 @@ export default async function AdminDashboard() {
                         href={`/admin/series/${item.id}/sessions`}
                         className="action-menu-item"
                       >
-                        Manage sessions
+                        Sessions
                       </Link>
                       <Link
                         href={`/admin/series/${item.id}/attendance`}
                         className="action-menu-item"
                       >
                         Attendance
+                      </Link>
+                      <Link
+                        href={`/admin/series/${item.id}/rewards`}
+                        className="action-menu-item"
+                      >
+                        Rewards
+                      </Link>
+                      <Link
+                        href={`/admin/series/${item.id}/permissions`}
+                        className="action-menu-item"
+                      >
+                        Permissions
+                      </Link>
+                      <Link
+                        href={`/admin/series/${item.id}/edit`}
+                        className="action-menu-item"
+                      >
+                        Edit
                       </Link>
                     </div>
                   </details>
@@ -88,14 +106,6 @@ export default async function AdminDashboard() {
           )}
         </section>
       </div>
-      <section className="card" style={{ marginTop: 24 }}>
-        <h2>Quick actions</h2>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <Link href="/admin/series">
-            <button>Create or manage series</button>
-          </Link>
-        </div>
-      </section>
     </>
   );
 }

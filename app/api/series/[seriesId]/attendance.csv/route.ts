@@ -5,6 +5,7 @@ import { isAdminEmail } from "@/lib/auth/admin";
 import { listSessions } from "@/lib/data/sessions";
 import { getParticipantsByIds } from "@/lib/data/participants";
 import type { Timestamp } from "firebase-admin/firestore";
+import { canManageSeries } from "@/lib/auth/series";
 
 function escapeCsv(value: string) {
   if (value.includes(",") || value.includes("\n") || value.includes("\"")) {
@@ -52,7 +53,7 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
   const isAdmin = isAdminEmail(user.email ?? "");
-  if (!isAdmin && series.createdBy !== user.email) {
+  if (!canManageSeries({ email: user.email ?? "", series, isAdmin })) {
     return new Response("Forbidden", { status: 403 });
   }
 

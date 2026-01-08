@@ -3,6 +3,7 @@ import { getSession, deleteSessionWithAttendance } from "@/lib/data/sessions";
 import { getSeries } from "@/lib/data/series";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { canManageSeries } from "@/lib/auth/series";
 
 function toIso(value: any) {
   if (!value) return null;
@@ -45,11 +46,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Session not found." }, { status: 404 });
   }
   const isAdmin = isAdminEmail(user.email ?? "");
-  if (!isAdmin && session.createdBy !== user.email) {
-    const series = await getSeries(session.seriesId);
-    if (!series || series.createdBy !== user.email) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  const series = await getSeries(session.seriesId);
+  if (!series) {
+    return NextResponse.json({ error: "Session not found." }, { status: 404 });
+  }
+  if (!canManageSeries({ email: user.email ?? "", series, isAdmin })) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   await deleteSessionWithAttendance(params.sessionId);

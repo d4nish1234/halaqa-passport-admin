@@ -6,6 +6,7 @@ import { getParticipantsByIds } from "@/lib/data/participants";
 import { formatDateTime } from "@/lib/data/format";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { canManageSeries } from "@/lib/auth/series";
 import AttendanceExportLink from "@/components/AttendanceExportLink";
 
 export default async function AttendancePage({
@@ -22,7 +23,7 @@ export default async function AttendancePage({
     redirect("/login");
   }
   const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) {
+  if (!canManageSeries({ email: user.email, series, isAdmin })) {
     redirect("/admin");
   }
 

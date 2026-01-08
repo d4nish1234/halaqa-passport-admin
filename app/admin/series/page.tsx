@@ -82,6 +82,12 @@ export default async function SeriesPage() {
                           Rewards
                         </Link>
                         <Link
+                          href={`/admin/series/${item.id}/permissions`}
+                          className="action-menu-item"
+                        >
+                          Permissions
+                        </Link>
+                        <Link
                           href={`/admin/series/${item.id}/edit`}
                           className="action-menu-item"
                         >

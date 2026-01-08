@@ -15,11 +15,32 @@ export async function listSeriesForUser(params: {
 }): Promise<Series[]> {
   const db = getAdminFirestore();
   const base = db.collection(COLLECTION).orderBy("createdAt", "desc");
-  const query = params.isAdmin
-    ? base
-    : base.where("createdBy", "==", params.email);
-  const snapshot = await query.get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as SeriesRecord) }));
+  if (params.isAdmin) {
+    const snapshot = await base.get();
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as SeriesRecord)
+    }));
+  }
+
+  const [ownedSnapshot, managedSnapshot] = await Promise.all([
+    base.where("createdBy", "==", params.email).get(),
+    base.where("managers", "array-contains", params.email.toLowerCase()).get()
+  ]);
+
+  const items = new Map<string, Series>();
+  for (const doc of ownedSnapshot.docs) {
+    items.set(doc.id, { id: doc.id, ...(doc.data() as SeriesRecord) });
+  }
+  for (const doc of managedSnapshot.docs) {
+    items.set(doc.id, { id: doc.id, ...(doc.data() as SeriesRecord) });
+  }
+
+  return [...items.values()].sort((a, b) => {
+    const aTime = a.createdAt.toDate().getTime();
+    const bTime = b.createdAt.toDate().getTime();
+    return bTime - aTime;
+  });
 }
 
 export async function getSeries(seriesId: string): Promise<Series | null> {
@@ -71,5 +92,12 @@ export async function updateSeriesRewards(seriesId: string, rewards: number[]) {
   const db = getAdminFirestore();
   await db.collection(COLLECTION).doc(seriesId).update({
     rewards
+  });
+}
+
+export async function updateSeriesManagers(seriesId: string, managers: string[]) {
+  const db = getAdminFirestore();
+  await db.collection(COLLECTION).doc(seriesId).update({
+    managers
   });
 }

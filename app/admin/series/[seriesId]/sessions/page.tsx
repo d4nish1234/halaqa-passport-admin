@@ -7,6 +7,7 @@ import { formatDateTime, formatTime } from "@/lib/data/format";
 import DeleteSessionButton from "@/components/DeleteSessionButton";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { canManageSeries } from "@/lib/auth/series";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -46,7 +47,7 @@ export default async function SessionsPage({
     const isAdmin = isAdminEmail(user.email);
     if (
       !currentSeries ||
-      (!isAdmin && currentSeries.createdBy !== user.email) ||
+      !canManageSeries({ email: user.email, series: currentSeries, isAdmin }) ||
       !currentSeries.isActive ||
       currentSeries.completed
     ) {
@@ -79,7 +80,7 @@ export default async function SessionsPage({
     redirect("/login");
   }
   const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) {
+  if (!canManageSeries({ email: user.email, series, isAdmin })) {
     redirect("/admin");
   }
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSeries, updateSeriesDetails, updateSeriesStatus } from "@/lib/data/series";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { canManageSeries } from "@/lib/auth/series";
 
 async function updateSeriesAction(formData: FormData) {
   "use server";
@@ -17,7 +18,7 @@ async function updateSeriesAction(formData: FormData) {
   const user = await getSessionUser();
   if (!user?.email || !currentSeries) return;
   const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && currentSeries.createdBy !== user.email) return;
+  if (!canManageSeries({ email: user.email, series: currentSeries, isAdmin })) return;
 
   if (currentSeries.isActive && name && startDate) {
     await updateSeriesDetails(seriesId, {
@@ -44,7 +45,7 @@ export default async function EditSeriesPage({
     redirect("/login");
   }
   const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) {
+  if (!canManageSeries({ email: user.email, series, isAdmin })) {
     redirect("/admin");
   }
 

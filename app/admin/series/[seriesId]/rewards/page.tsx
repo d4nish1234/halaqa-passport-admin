@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSeries, updateSeriesRewards } from "@/lib/data/series";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { canManageSeries } from "@/lib/auth/series";
 import RewardsForm from "@/components/RewardsForm";
 
 async function updateRewardsAction(formData: FormData) {
@@ -16,7 +17,7 @@ async function updateRewardsAction(formData: FormData) {
   ]);
   if (!user?.email || !series) return;
   const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) return;
+  if (!canManageSeries({ email: user.email, series, isAdmin })) return;
 
   const rawThresholds = formData.getAll("thresholds");
   const thresholds = Array.from(
@@ -46,7 +47,7 @@ export default async function RewardsPage({
     redirect("/login");
   }
   const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) {
+  if (!canManageSeries({ email: user.email, series, isAdmin })) {
     redirect("/admin");
   }
 

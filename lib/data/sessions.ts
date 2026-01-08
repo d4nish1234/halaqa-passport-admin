@@ -1,5 +1,6 @@
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import type { Session, SessionRecord } from "@/lib/data/types";
+import { listSeriesForUser } from "@/lib/data/series";
 import { deleteAttendanceForSession } from "@/lib/data/attendance";
 
 const COLLECTION = "sessions";
@@ -21,11 +22,40 @@ export async function listRecentSessions(params: {
 }): Promise<Session[]> {
   const db = getAdminFirestore();
   const base = db.collection(COLLECTION).orderBy("startAt", "desc");
-  const query = params.isAdmin
-    ? base
-    : base.where("createdBy", "==", params.email);
-  const snapshot = await query.limit(params.limit ?? 5).get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as SessionRecord) }));
+  if (params.isAdmin) {
+    const snapshot = await base.limit(params.limit ?? 5).get();
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as SessionRecord)
+    }));
+  }
+
+  const series = await listSeriesForUser({
+    email: params.email,
+    isAdmin: false
+  });
+  const seriesIds = series.map((item) => item.id);
+  if (seriesIds.length === 0) return [];
+
+  if (seriesIds.length <= 10) {
+    const snapshot = await base
+      .where("seriesId", "in", seriesIds)
+      .limit(params.limit ?? 5)
+      .get();
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as SessionRecord)
+    }));
+  }
+
+  const ownedSnapshot = await base
+    .where("createdBy", "==", params.email)
+    .limit(params.limit ?? 5)
+    .get();
+  return ownedSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as SessionRecord)
+  }));
 }
 
 export async function getSession(sessionId: string): Promise<Session | null> {

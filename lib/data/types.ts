@@ -8,6 +8,7 @@ export type SeriesRecord = {
   createdBy: string;
   createdAt: Timestamp;
   rewards?: number[];
+  managers?: string[];
 };
 
 export type SessionRecord = {
