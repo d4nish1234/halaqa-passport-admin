@@ -128,12 +128,14 @@ export default async function SessionsPage({
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Link
-                        href={`/tv/${session.id}`}
-                        className="button-link secondary"
-                      >
-                        TV mode
-                      </Link>
+                      {status !== "CLOSED" ? (
+                        <Link
+                          href={`/tv/${session.id}`}
+                          className="button-link secondary"
+                        >
+                          TV mode
+                        </Link>
+                      ) : null}
                       <DeleteSessionButton sessionId={session.id} />
                     </div>
                   </td>
