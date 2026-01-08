@@ -68,7 +68,22 @@ export default async function SeriesPermissionsPage({
   }
   const isAdmin = isAdminEmail(user.email);
   if (!isAdmin && series.createdBy !== user.email) {
-    redirect("/admin");
+    return (
+      <section className="card" style={{ maxWidth: 640 }}>
+        <h2>Permissions</h2>
+        <p style={{ color: "var(--muted)" }}>
+          You do not have access to manage permissions for this series. Please
+          contact {series.createdBy} to manage users for this series.
+        </p>
+        <div style={{ marginTop: 16 }}>
+          <Link href="/admin/series">
+            <button type="button" className="secondary">
+              Back to series
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
   }
 
   const managers = (series.managers ?? []).map((email) => email.toLowerCase());
