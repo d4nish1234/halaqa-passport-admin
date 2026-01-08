@@ -71,6 +71,11 @@ export default async function SeriesPage() {
                           Attendance
                         </button>
                       </Link>
+                      <Link href={`/admin/series/${item.id}/rewards`}>
+                        <button type="button" className="secondary">
+                          Rewards
+                        </button>
+                      </Link>
                       <Link href={`/admin/series/${item.id}/edit`}>
                         <button type="button" className="secondary">
                           Edit

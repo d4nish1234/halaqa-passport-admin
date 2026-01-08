@@ -66,3 +66,10 @@ export async function updateSeriesDetails(
     startDate: updates.startDate as any
   });
 }
+
+export async function updateSeriesRewards(seriesId: string, rewards: number[]) {
+  const db = getAdminFirestore();
+  await db.collection(COLLECTION).doc(seriesId).update({
+    rewards
+  });
+}

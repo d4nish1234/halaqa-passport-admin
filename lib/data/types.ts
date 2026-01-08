@@ -7,6 +7,7 @@ export type SeriesRecord = {
   completed: boolean;
   createdBy: string;
   createdAt: Timestamp;
+  rewards?: number[];
 };
 
 export type SessionRecord = {
