@@ -58,6 +58,7 @@ export default async function SeriesPage({
               <tr>
                 <th>Name</th>
                 <th>Start</th>
+                <th>Created by</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -68,6 +69,7 @@ export default async function SeriesPage({
                   href={`/admin/series/${item.id}`}
                   name={item.name}
                   startDate={formatDate(item.startDate)}
+                  createdBy={item.createdBy}
                   status={
                     item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"
                   }
@@ -89,6 +91,7 @@ export default async function SeriesPage({
               <tr>
                 <th>Name</th>
                 <th>Start</th>
+                <th>Created by</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -99,6 +102,7 @@ export default async function SeriesPage({
                   href={`/admin/series/${item.id}`}
                   name={item.name}
                   startDate={formatDate(item.startDate)}
+                  createdBy={item.createdBy}
                   status={
                     item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"
                   }

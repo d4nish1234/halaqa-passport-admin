@@ -6,13 +6,15 @@ type SeriesRowProps = {
   name: string;
   startDate: string;
   status: string;
+  createdBy: string;
 };
 
 export default function SeriesRow({
   href,
   name,
   startDate,
-  status
+  status,
+  createdBy
 }: SeriesRowProps) {
   const router = useRouter();
 
@@ -35,6 +37,7 @@ export default function SeriesRow({
     >
       <td>{name}</td>
       <td>{startDate}</td>
+      <td>{createdBy}</td>
       <td>{status}</td>
     </tr>
   );

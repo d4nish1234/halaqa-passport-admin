@@ -16,13 +16,15 @@ export default function RootLayout({
       <body>
         {children}
         <footer>
-          Copyright 2026 Young Momins |{" "}
+          © 2026 Young Momins |{" "}
           <a href="https://youngmomins.com" target="_blank" rel="noreferrer">
             Youngmomins.com
           </a>
           {" "}
           | contact:{" "}
           <a href="mailto:info@youngmomins.com">info@youngmomins.com</a>
+          {" "}
+          | Free for community use
         </footer>
       </body>
     </html>
