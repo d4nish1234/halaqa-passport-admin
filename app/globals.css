@@ -70,6 +70,24 @@ nav a:hover {
   background: #fff;
 }
 
+.help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.help-button:hover {
+  background: #fff;
+}
+
 .account-menu {
   position: relative;
 }
@@ -138,6 +156,57 @@ nav a:hover {
   background: #f6f2e8;
 }
 
+.modal {
+  width: min(520px, 92vw);
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  background: var(--card);
+  box-shadow: 0 24px 60px rgba(31, 22, 10, 0.18);
+  font-family: inherit;
+}
+
+.modal::backdrop {
+  background: rgba(27, 26, 23, 0.4);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.modal-header button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.modal-body {
+  display: grid;
+  gap: 12px;
+}
+
+.modal-body h4 {
+  margin: 4px 0 0;
+}
+
+.modal-body p {
+  margin: 0;
+  color: var(--text);
+}
+
+.modal-body ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -146,13 +215,57 @@ nav a:hover {
   box-shadow: 0 18px 40px rgba(31, 22, 10, 0.08);
 }
 
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.card-header h2 {
+  margin: 0;
+}
+
 .grid {
   display: grid;
   gap: 20px;
 }
 
 .grid.cols-2 {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid.cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.span-8 {
+  grid-column: span 8;
+}
+
+.span-4 {
+  grid-column: span 4;
+}
+
+.span-7 {
+  grid-column: span 7;
+}
+
+.span-5 {
+  grid-column: span 5;
+}
+
+.span-6 {
+  grid-column: span 6;
+}
+
+.span-12 {
+  grid-column: span 12;
+}
+
+.span-2 {
+  grid-column: 1 / -1;
 }
 
 button,
@@ -237,64 +350,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.action-menu {
-  position: relative;
-  display: inline-block;
-}
-
-.action-menu summary {
-  list-style: none;
-}
-
-.action-menu summary::-webkit-details-marker {
-  display: none;
-}
-
-.action-menu-trigger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-.action-menu[open] .action-menu-trigger {
-  background: #fff;
-}
-
-.action-menu-items {
-  position: absolute;
-  right: 0;
-  margin-top: 6px;
-  min-width: 160px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 16px 30px rgba(31, 22, 10, 0.12);
-  padding: 6px;
-  display: grid;
-  gap: 4px;
-  z-index: 10;
-}
-
-.action-menu-item {
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--text);
-}
-
-.action-menu-item:hover {
-  background: #f6f2e8;
-}
-
 .list-divided {
   display: grid;
   gap: 12px;
@@ -312,6 +367,18 @@ button:disabled {
 .list-row:last-child {
   border-bottom: none;
   padding-bottom: 0;
+}
+
+.list-row-link {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.list-row-link:hover {
+  background: #fffaf0;
 }
 
 @keyframes spin {
@@ -345,6 +412,23 @@ form {
   text-align: left;
   padding: 10px 8px;
   border-bottom: 1px solid var(--border);
+}
+
+.table-row-link {
+  cursor: pointer;
+}
+
+.table-row-link:hover td {
+  background: #fffaf0;
+}
+
+.table-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  text-decoration: underline;
 }
 
 .badge {
@@ -443,5 +527,20 @@ form {
   header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .grid.cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid.cols-12 {
+    grid-template-columns: 1fr;
+  }
+
+  .span-8,
+  .span-4,
+  .span-2,
+  .span-12 {
+    grid-column: 1 / -1;
   }
 }

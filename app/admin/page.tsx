@@ -4,6 +4,7 @@ import { listRecentSessions } from "@/lib/data/sessions";
 import { formatDate, formatDateTime } from "@/lib/data/format";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
+import WelcomeModal from "@/components/WelcomeModal";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -41,67 +42,33 @@ export default async function AdminDashboard() {
 
   return (
     <>
+      <WelcomeModal />
       <div className="grid cols-2">
         <section className="card">
-          <h2>Active series</h2>
+          <div className="card-header">
+            <h2>Active series</h2>
+            <Link href="/admin/series?new=1" className="button-link secondary">
+              + Series
+            </Link>
+          </div>
           {activeSeries.length === 0 ? (
             <p>No active series yet.</p>
           ) : (
-            <ul>
+            <div className="list-divided">
               {activeSeries.map((item) => (
-                <li
+                <Link
                   key={item.id}
-                  style={{
-                    marginBottom: 8,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: 12
-                  }}
+                  href={`/admin/series/${item.id}`}
+                  className="list-row-link"
                 >
                   <div>
                     <strong>{item.name}</strong>
                     {isAdmin ? ` (${item.createdBy})` : ""} ·{" "}
                     {formatDate(item.startDate)}
                   </div>
-                  <details className="action-menu">
-                    <summary className="action-menu-trigger">...</summary>
-                    <div className="action-menu-items">
-                      <Link
-                        href={`/admin/series/${item.id}/sessions`}
-                        className="action-menu-item"
-                      >
-                        Sessions
-                      </Link>
-                      <Link
-                        href={`/admin/series/${item.id}/attendance`}
-                        className="action-menu-item"
-                      >
-                        Attendance
-                      </Link>
-                      <Link
-                        href={`/admin/series/${item.id}/rewards`}
-                        className="action-menu-item"
-                      >
-                        Rewards
-                      </Link>
-                      <Link
-                        href={`/admin/series/${item.id}/permissions`}
-                        className="action-menu-item"
-                      >
-                        Permissions
-                      </Link>
-                      <Link
-                        href={`/admin/series/${item.id}/edit`}
-                        className="action-menu-item"
-                      >
-                        Edit
-                      </Link>
-                    </div>
-                  </details>
-                </li>
+                </Link>
               ))}
-            </ul>
+            </div>
           )}
         </section>
         <section className="card">

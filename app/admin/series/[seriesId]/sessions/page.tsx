@@ -8,6 +8,7 @@ import DeleteSessionButton from "@/components/DeleteSessionButton";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { canManageSeries } from "@/lib/auth/series";
+import CreateSessionModal from "@/components/CreateSessionModal";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -101,94 +102,61 @@ export default async function SessionsPage({
   });
 
   return (
-    <div className="grid cols-2">
-      <section className="card">
+    <section className="card">
+      <div className="card-header">
         <h2>Sessions for {series.name}</h2>
-        {sessions.length === 0 ? (
-          <p>No sessions yet.</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Start</th>
-                <th>Check-in</th>
-                <th>Status</th>
-                <th />
+        <CreateSessionModal
+          action={createSessionAction}
+          disabled={!series.isActive || series.completed}
+          seriesId={series.id}
+        />
+      </div>
+      {!series.isActive || series.completed ? (
+        <p style={{ color: "var(--muted)" }}>
+          This series is inactive or completed. Reactivate it to create new
+          sessions.
+        </p>
+      ) : null}
+      {sessions.length === 0 ? (
+        <p>No sessions yet.</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Start</th>
+              <th>Check-in</th>
+              <th>Status</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {sessionsWithStatus.map(({ session, status, badgeClass }) => (
+              <tr key={session.id}>
+                <td>{formatDateTime(session.startAt)}</td>
+                <td>
+                  {formatTime(session.checkinOpenAt)} - {formatTime(session.checkinCloseAt)}
+                </td>
+                <td>
+                  <span className={badgeClass}>{status}</span>
+                </td>
+                <td>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {status !== "CLOSED" ? (
+                      <Link
+                        href={`/tv/${session.id}`}
+                        className="button-link secondary"
+                      >
+                        TV mode
+                      </Link>
+                    ) : null}
+                    <DeleteSessionButton sessionId={session.id} />
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {sessionsWithStatus.map(({ session, status, badgeClass }) => (
-                <tr key={session.id}>
-                  <td>{formatDateTime(session.startAt)}</td>
-                  <td>
-                    {formatTime(session.checkinOpenAt)} - {formatTime(session.checkinCloseAt)}
-                  </td>
-                  <td>
-                    <span className={badgeClass}>{status}</span>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      {status !== "CLOSED" ? (
-                        <Link
-                          href={`/tv/${session.id}`}
-                          className="button-link secondary"
-                        >
-                          TV mode
-                        </Link>
-                      ) : null}
-                      <DeleteSessionButton sessionId={session.id} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
-      <section className="card">
-        <h2>Create session</h2>
-        {!series.isActive || series.completed ? (
-          <p style={{ color: "var(--muted)" }}>
-            This series is inactive or completed. Reactivate it to create new
-            sessions.
-          </p>
-        ) : null}
-        <form action={createSessionAction}>
-          <label>
-            Session start
-            <input
-              type="datetime-local"
-              name="startAt"
-              required
-              disabled={!series.isActive || series.completed}
-            />
-          </label>
-          <label>
-            Check-in opens
-            <input
-              type="datetime-local"
-              name="checkinOpenAt"
-              required
-              disabled={!series.isActive || series.completed}
-            />
-          </label>
-          <label>
-            Check-in closes
-            <input
-              type="datetime-local"
-              name="checkinCloseAt"
-              required
-              disabled={!series.isActive || series.completed}
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={!series.isActive || series.completed}
-          >
-            Create session
-          </button>
-        </form>
-      </section>
-    </div>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
   );
 }

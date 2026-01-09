@@ -1,7 +1,9 @@
 export default function AttendanceExportLink({
-  seriesId
+  seriesId,
+  label = "Export CSV"
 }: {
   seriesId: string;
+  label?: string;
 }) {
-  return <a href={`/api/series/${seriesId}/attendance.csv`}>Export CSV</a>;
+  return <a href={`/api/series/${seriesId}/attendance.csv`}>{label}</a>;
 }
