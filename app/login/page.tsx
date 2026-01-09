@@ -49,8 +49,19 @@ export default function LoginPage() {
       </header>
       <main>
         <section className="card" style={{ maxWidth: 480 }}>
-          <h2>Sign in</h2>
-          <p>Use your Google account to Sign up or Sign in.</p>
+          <h2>Welcome to Halaqa Passport</h2>
+          <p>You’re almost ready to get started.</p>
+          <p>
+            Sign in to access your admin dashboard, where you can create
+            programs, set up sessions, and display QR codes for participants to
+            check in.
+          </p>
+          <p>
+            This admin portal is free to use and intended for program organizers
+            and volunteers.
+          </p>
+          <h3 style={{ marginTop: 16 }}>Sign in</h3>
+          <p>Use your Google account to sign in.</p>
           <button
             onClick={() => handleSignIn(new GoogleAuthProvider())}
             disabled={loading}
