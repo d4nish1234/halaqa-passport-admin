@@ -6,7 +6,7 @@ type SeriesRowProps = {
   name: string;
   startDate: string;
   status: string;
-  createdBy: string;
+  createdBy?: string | null;
 };
 
 export default function SeriesRow({
@@ -37,7 +37,7 @@ export default function SeriesRow({
     >
       <td>{name}</td>
       <td>{startDate}</td>
-      <td>{createdBy}</td>
+      {createdBy ? <td>{createdBy}</td> : null}
       <td>{status}</td>
     </tr>
   );
