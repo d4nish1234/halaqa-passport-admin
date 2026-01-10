@@ -31,3 +31,13 @@ export async function getParticipantsByIds(ids: string[]) {
 
   return result;
 }
+
+export async function updateParticipantNickname(participantId: string, nickname: string) {
+  const db = getAdminFirestore();
+  await db.collection(COLLECTION).doc(participantId).set(
+    {
+      nickname
+    },
+    { merge: true }
+  );
+}

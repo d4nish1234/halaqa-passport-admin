@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import InlineNicknameEditor from "@/components/InlineNicknameEditor";
 
 export type TvSessionData = {
   id: string;
@@ -210,18 +211,34 @@ export default function TvSessionDisplay({
             <div className="meta">No attendance yet.</div>
           ) : (
             <div className="tv-leaderboard-list">
-              {leaderboard.map((entry) => {
-                const suffix = entry.participantId.slice(-4);
-                const name = entry.nickname?.trim()
-                  ? `${entry.nickname} (${suffix})`
-                  : `Participant (${suffix})`;
-                return (
-                  <div key={entry.participantId} className="tv-leaderboard-row">
-                    <span>{name}</span>
-                    <span>{entry.count}</span>
-                  </div>
-                );
-              })}
+            {leaderboard.map((entry) => {
+              const suffix = entry.participantId.slice(-4);
+              const name = entry.nickname?.trim()
+                ? `${entry.nickname} (${suffix})`
+                : `Participant (${suffix})`;
+              return (
+                <div key={entry.participantId} className="tv-leaderboard-row">
+                  <span className="tv-leaderboard-name">
+                    {name}
+                    <InlineNicknameEditor
+                      seriesId={data.seriesId}
+                      participantId={entry.participantId}
+                      nickname={entry.nickname}
+                      onUpdated={(next) =>
+                        setLeaderboard((prev) =>
+                          prev.map((item) =>
+                            item.participantId === entry.participantId
+                              ? { ...item, nickname: next }
+                              : item
+                          )
+                        )
+                      }
+                    />
+                  </span>
+                  <span>{entry.count}</span>
+                </div>
+              );
+            })}
             </div>
           )}
         </div>

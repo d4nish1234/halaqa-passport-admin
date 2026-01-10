@@ -10,6 +10,8 @@ import { isAdminEmail } from "@/lib/auth/admin";
 import { canManageSeries } from "@/lib/auth/series";
 import CreateSessionModal from "@/components/CreateSessionModal";
 import ClientDateTime from "@/components/ClientDateTime";
+import { listAttendance } from "@/lib/data/attendance";
+import SessionAttendanceModal from "@/components/SessionAttendanceModal";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -93,7 +95,10 @@ export default async function SessionsPage({
     redirect(`/admin/series/${params.seriesId}/sessions`);
   }
 
-  const sessions = await listSessions(params.seriesId);
+  const [sessions, attendance] = await Promise.all([
+    listSessions(params.seriesId),
+    listAttendance(params.seriesId)
+  ]);
   const user = await getSessionUser();
   if (!user?.email) {
     redirect("/login");
@@ -104,6 +109,14 @@ export default async function SessionsPage({
   }
 
   const now = Date.now();
+  const sessionCounts = new Map<string, number>();
+  for (const record of attendance) {
+    sessionCounts.set(
+      record.sessionId,
+      (sessionCounts.get(record.sessionId) ?? 0) + 1
+    );
+  }
+
   const sessionsWithStatus = sessions.map((session) => {
     const status = getSessionStatus(
       session.checkinOpenAt,
@@ -125,7 +138,16 @@ export default async function SessionsPage({
     const checkinCloseAt =
       session.checkinCloseAt?.toDate?.().toISOString() ??
       new Date(session.checkinCloseAt as any).toISOString();
-    return { session, status, badgeClass, startAt, checkinOpenAt, checkinCloseAt };
+    const attendanceCount = sessionCounts.get(session.id) ?? 0;
+    return {
+      session,
+      status,
+      badgeClass,
+      startAt,
+      checkinOpenAt,
+      checkinCloseAt,
+      attendanceCount
+    };
   });
 
   return (
@@ -153,12 +175,21 @@ export default async function SessionsPage({
               <th>Start</th>
               <th>Check-in</th>
               <th>Status</th>
+              <th>Attendance</th>
               <th />
             </tr>
           </thead>
           <tbody>
             {sessionsWithStatus.map(
-              ({ session, status, badgeClass, startAt, checkinOpenAt, checkinCloseAt }) => (
+              ({
+                session,
+                status,
+                badgeClass,
+                startAt,
+                checkinOpenAt,
+                checkinCloseAt,
+                attendanceCount
+              }) => (
               <tr key={session.id}>
                 <td>
                   <ClientDateTime value={startAt} format="datetime" />
@@ -169,6 +200,13 @@ export default async function SessionsPage({
                 </td>
                 <td>
                   <span className={badgeClass}>{status}</span>
+                </td>
+                <td>
+                  <SessionAttendanceModal
+                    sessionId={session.id}
+                    seriesId={params.seriesId}
+                    count={attendanceCount}
+                  />
                 </td>
                 <td>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

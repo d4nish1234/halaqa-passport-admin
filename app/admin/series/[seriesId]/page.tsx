@@ -21,6 +21,7 @@ import AttendanceExportLink from "@/components/AttendanceExportLink";
 import CreateSessionModal from "@/components/CreateSessionModal";
 import EditSeriesModal from "@/components/EditSeriesModal";
 import ClientDateTime from "@/components/ClientDateTime";
+import AttendeeRow from "@/components/AttendeeRow";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -407,18 +408,29 @@ export default async function SeriesOverviewPage({
               <tr>
                 <th>Nickname</th>
                 <th>Sessions attended</th>
+                <th />
               </tr>
             </thead>
             <tbody>
               {sortedParticipants.slice(0, 10).map(([participantId, count]) => (
-                <tr key={participantId}>
-                  <td>{displayName(participantId)}</td>
-                  <td>{count}</td>
-                </tr>
+                <AttendeeRow
+                  key={participantId}
+                  seriesId={params.seriesId}
+                  participantId={participantId}
+                  nickname={participantsById.get(participantId)?.nickname?.trim() ?? null}
+                  count={count}
+                />
               ))}
             </tbody>
           </table>
         )}
+        <div style={{ marginTop: 12 }}>
+          <Link href={`/admin/series/${params.seriesId}/attendees`}>
+            <button type="button" className="secondary">
+              Show all attendees
+            </button>
+          </Link>
+        </div>
         <h3 style={{ marginTop: 24 }}>Perfect attendance</h3>
         {perfectAttendance.length === 0 ? (
           <p>No perfect attendance yet.</p>

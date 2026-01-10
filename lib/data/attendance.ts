@@ -12,6 +12,15 @@ export async function listAttendance(seriesId: string): Promise<Attendance[]> {
   return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as AttendanceRecord) }));
 }
 
+export async function listAttendanceForSession(sessionId: string): Promise<Attendance[]> {
+  const db = getAdminFirestore();
+  const snapshot = await db
+    .collection(COLLECTION)
+    .where("sessionId", "==", sessionId)
+    .get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as AttendanceRecord) }));
+}
+
 export async function deleteAttendanceForSession(sessionId: string) {
   const db = getAdminFirestore();
   const batchSize = 500;
