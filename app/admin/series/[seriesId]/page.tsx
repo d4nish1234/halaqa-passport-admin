@@ -327,11 +327,18 @@ export default async function SeriesOverviewPage({
       <section className="card span-7">
         <div className="card-header">
           <h2>Recent sessions</h2>
-          <CreateSessionModal
-            action={createSessionAction}
-            disabled={!series.isActive || series.completed}
-            seriesId={series.id}
-          />
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Link href={`/admin/series/${params.seriesId}/sessions`}>
+              <button type="button" className="secondary">
+                Show all sessions
+              </button>
+            </Link>
+            <CreateSessionModal
+              action={createSessionAction}
+              disabled={!series.isActive || series.completed}
+              seriesId={series.id}
+            />
+          </div>
         </div>
         {!series.isActive || series.completed ? (
           <p style={{ color: "var(--muted)" }}>
@@ -386,19 +393,29 @@ export default async function SeriesOverviewPage({
             </tbody>
           </table>
         )}
-        <div style={{ marginTop: 12 }}>
-          <Link href={`/admin/series/${params.seriesId}/sessions`}>
-            <button type="button" className="secondary">
-              Show all sessions
-            </button>
-          </Link>
-        </div>
       </section>
 
       <section className="card span-5">
         <h2>Top attendees</h2>
-        <div style={{ marginBottom: 12 }}>
-          <AttendanceExportLink seriesId={params.seriesId} label="Export Attendance (CSV)" />
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            justifyContent: "flex-end",
+            marginBottom: 12,
+            flexWrap: "wrap"
+          }}
+        >
+          <AttendanceExportLink
+            seriesId={params.seriesId}
+            label="Export Attendance"
+            className="secondary"
+          />
+          <Link href={`/admin/series/${params.seriesId}/attendees`}>
+            <button type="button" className="secondary">
+              Show all attendees
+            </button>
+          </Link>
         </div>
         {sortedParticipants.length === 0 ? (
           <p>No attendance records yet.</p>
@@ -424,13 +441,6 @@ export default async function SeriesOverviewPage({
             </tbody>
           </table>
         )}
-        <div style={{ marginTop: 12 }}>
-          <Link href={`/admin/series/${params.seriesId}/attendees`}>
-            <button type="button" className="secondary">
-              Show all attendees
-            </button>
-          </Link>
-        </div>
         <h3 style={{ marginTop: 24 }}>Perfect attendance</h3>
         {perfectAttendance.length === 0 ? (
           <p>No perfect attendance yet.</p>

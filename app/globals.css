@@ -354,6 +354,19 @@ button.secondary.danger:hover {
   color: var(--text);
 }
 
+a.button-link.secondary,
+a.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+}
+
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
