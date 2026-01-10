@@ -11,7 +11,7 @@ import {
 import { listSessions, createSession } from "@/lib/data/sessions";
 import { listAttendance } from "@/lib/data/attendance";
 import { getParticipantsByIds } from "@/lib/data/participants";
-import { formatDateTime, formatTime } from "@/lib/data/format";
+import { formatDateTime } from "@/lib/data/format";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { canManageSeries } from "@/lib/auth/series";
@@ -20,6 +20,7 @@ import RewardsForm from "@/components/RewardsForm";
 import AttendanceExportLink from "@/components/AttendanceExportLink";
 import CreateSessionModal from "@/components/CreateSessionModal";
 import EditSeriesModal from "@/components/EditSeriesModal";
+import ClientDateTime from "@/components/ClientDateTime";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -240,7 +241,16 @@ export default async function SeriesOverviewPage({
         : status === "UPCOMING"
         ? "badge upcoming"
         : "badge";
-    return { session, status, badgeClass };
+    const startAt =
+      session.startAt?.toDate?.().toISOString() ??
+      new Date(session.startAt as any).toISOString();
+    const checkinOpenAt =
+      session.checkinOpenAt?.toDate?.().toISOString() ??
+      new Date(session.checkinOpenAt as any).toISOString();
+    const checkinCloseAt =
+      session.checkinCloseAt?.toDate?.().toISOString() ??
+      new Date(session.checkinCloseAt as any).toISOString();
+    return { session, status, badgeClass, startAt, checkinOpenAt, checkinCloseAt };
   });
 
   const sessionCounts = new Map<string, number>();
@@ -342,12 +352,15 @@ export default async function SeriesOverviewPage({
               </tr>
             </thead>
             <tbody>
-              {sessionsWithStatus.map(({ session, status, badgeClass }) => (
+              {sessionsWithStatus.map(
+                ({ session, status, badgeClass, startAt, checkinOpenAt, checkinCloseAt }) => (
                 <tr key={session.id}>
-                  <td>{formatDateTime(session.startAt)}</td>
                   <td>
-                    {formatTime(session.checkinOpenAt)} -{" "}
-                    {formatTime(session.checkinCloseAt)}
+                    <ClientDateTime value={startAt} format="datetime" />
+                  </td>
+                  <td>
+                    <ClientDateTime value={checkinOpenAt} format="time" /> -{" "}
+                    <ClientDateTime value={checkinCloseAt} format="time" />
                   </td>
                   <td>
                     <span className={badgeClass}>{status}</span>
@@ -367,7 +380,8 @@ export default async function SeriesOverviewPage({
                     </div>
                   </td>
                 </tr>
-              ))}
+              )
+              )}
             </tbody>
           </table>
         )}
