@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 type CreateSessionModalProps = {
   action: (formData: FormData) => void;
@@ -16,6 +16,7 @@ export default function CreateSessionModal({
   seriesId
 }: CreateSessionModalProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const timezoneOffset = useMemo(() => String(new Date().getTimezoneOffset()), []);
 
   useEffect(() => {
     if (openOnLoad && !disabled) {
@@ -52,6 +53,7 @@ export default function CreateSessionModal({
           {seriesId ? (
             <input type="hidden" name="seriesId" value={seriesId} />
           ) : null}
+          <input type="hidden" name="timezoneOffset" value={timezoneOffset} />
           <label>
             Session start
             <input type="datetime-local" name="startAt" required />

@@ -30,6 +30,17 @@ function getSessionStatus(
   return "OPEN";
 }
 
+function parseLocalDateTime(value: string, timezoneOffset: number) {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const absOffset = Math.abs(timezoneOffset);
+  const sign = timezoneOffset > 0 ? "-" : "+";
+  const hours = String(Math.floor(absOffset / 60)).padStart(2, "0");
+  const minutes = String(absOffset % 60).padStart(2, "0");
+  const iso = `${normalized}:00${sign}${hours}:${minutes}`;
+  return new Date(iso);
+}
+
 export default async function SessionsPage({
   params
 }: {
@@ -54,20 +65,26 @@ export default async function SessionsPage({
     ) {
       return;
     }
-    const startAt = String(formData.get("startAt") ?? "").trim();
-    const checkinOpenAt = String(formData.get("checkinOpenAt") ?? "").trim();
-    const checkinCloseAt = String(formData.get("checkinCloseAt") ?? "").trim();
+    const startAtInput = String(formData.get("startAt") ?? "").trim();
+    const checkinOpenAtInput = String(formData.get("checkinOpenAt") ?? "").trim();
+    const checkinCloseAtInput = String(formData.get("checkinCloseAt") ?? "").trim();
+    const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
 
-    if (!startAt || !checkinOpenAt || !checkinCloseAt) {
+    if (!startAtInput || !checkinOpenAtInput || !checkinCloseAtInput) {
       return;
     }
+
+    const startAt = parseLocalDateTime(startAtInput, timezoneOffset);
+    const checkinOpenAt = parseLocalDateTime(checkinOpenAtInput, timezoneOffset);
+    const checkinCloseAt = parseLocalDateTime(checkinCloseAtInput, timezoneOffset);
+    if (!startAt || !checkinOpenAt || !checkinCloseAt) return;
 
     const token = crypto.randomBytes(6).toString("hex");
     await createSession({
       seriesId: params.seriesId,
-      startAt: new Date(startAt) as any,
-      checkinOpenAt: new Date(checkinOpenAt) as any,
-      checkinCloseAt: new Date(checkinCloseAt) as any,
+      startAt: startAt as any,
+      checkinOpenAt: checkinOpenAt as any,
+      checkinCloseAt: checkinCloseAt as any,
       token,
       createdBy: user.email
     });
