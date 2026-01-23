@@ -55,10 +55,6 @@ export default function CreateSessionModal({
           ) : null}
           <input type="hidden" name="timezoneOffset" value={timezoneOffset} />
           <label>
-            Session start
-            <input type="datetime-local" name="startAt" required />
-          </label>
-          <label>
             Check-in opens
             <input type="datetime-local" name="checkinOpenAt" required />
           </label>

@@ -73,11 +73,12 @@ export default async function SessionsPage({
     const checkinCloseAtInput = String(formData.get("checkinCloseAt") ?? "").trim();
     const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
 
-    if (!startAtInput || !checkinOpenAtInput || !checkinCloseAtInput) {
+    if (!checkinOpenAtInput || !checkinCloseAtInput) {
       return;
     }
 
-    const startAt = parseLocalDateTime(startAtInput, timezoneOffset);
+    const effectiveStartAtInput = startAtInput || checkinOpenAtInput;
+    const startAt = parseLocalDateTime(effectiveStartAtInput, timezoneOffset);
     const checkinOpenAt = parseLocalDateTime(checkinOpenAtInput, timezoneOffset);
     const checkinCloseAt = parseLocalDateTime(checkinCloseAtInput, timezoneOffset);
     if (!startAt || !checkinOpenAt || !checkinCloseAt) return;
