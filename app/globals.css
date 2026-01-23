@@ -585,6 +585,16 @@ form {
   gap: 6px;
 }
 
+.tv-leaderboard-level {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-strong);
+  background: #e8efe5;
+  padding: 2px 8px;
+  border-radius: 999px;
+  line-height: 1;
+}
+
 @media (max-width: 640px) {
   header {
     flex-direction: column;

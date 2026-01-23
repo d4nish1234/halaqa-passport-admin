@@ -19,6 +19,7 @@ type LeaderboardEntry = {
   participantId: string;
   nickname: string | null;
   count: number;
+  level: number;
 };
 
 type LeaderboardResponse = {
@@ -220,6 +221,9 @@ export default function TvSessionDisplay({
                 <div key={entry.participantId} className="tv-leaderboard-row">
                   <span className="tv-leaderboard-name">
                     {name}
+                    <span className="tv-leaderboard-level">
+                      Level {entry.level}
+                    </span>
                     <InlineNicknameEditor
                       seriesId={data.seriesId}
                       participantId={entry.participantId}

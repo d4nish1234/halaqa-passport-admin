@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { getSeries } from "@/lib/data/series";
 import { listAttendance } from "@/lib/data/attendance";
 import { getParticipantsByIds } from "@/lib/data/participants";
+import { getLevelFromExperience } from "@/lib/data/levels";
 
 type LeaderboardEntry = {
   participantId: string;
   nickname: string | null;
   count: number;
+  level: number;
 };
 
 export async function GET(
@@ -31,11 +33,15 @@ export async function GET(
   );
 
   const leaderboard: LeaderboardEntry[] = topEntries.map(
-    ([participantId, count]) => ({
-      participantId,
-      nickname: participantsById.get(participantId)?.nickname?.trim() ?? null,
-      count
-    })
+    ([participantId, count]) => {
+      const participant = participantsById.get(participantId);
+      return {
+        participantId,
+        nickname: participant?.nickname?.trim() ?? null,
+        count,
+        level: getLevelFromExperience(participant?.experience ?? 0).level
+      };
+    }
   );
 
   return NextResponse.json({ seriesName: series.name, leaderboard });

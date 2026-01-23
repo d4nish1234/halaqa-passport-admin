@@ -2,6 +2,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 
 type ParticipantRecord = {
   nickname?: string;
+  experience?: number;
 };
 
 const COLLECTION = "participants";
