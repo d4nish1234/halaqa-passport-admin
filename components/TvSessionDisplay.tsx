@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import InlineNicknameEditor from "@/components/InlineNicknameEditor";
 
@@ -78,9 +79,11 @@ export default function TvSessionDisplay({
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [qrMode, setQrMode] = useState<"session" | "apps">("session");
   const [leaderboardKey, setLeaderboardKey] = useState(0);
+  const router = useRouter();
   const pollsRemainingRef = useRef(pollsRemaining);
   const leaderboardPollsRemainingRef = useRef(leaderboardPollsRemaining);
   const prevLeaderboardLengthRef = useRef(0);
+  const appQrRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     pollsRemainingRef.current = pollsRemaining;
@@ -201,6 +204,17 @@ export default function TvSessionDisplay({
         <span />
         <span />
         <span />
+      </div>
+
+      {/* Back button */}
+      <div className="tv-back">
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => router.back()}
+        >
+          Back
+        </button>
       </div>
 
       {/* Header */}
@@ -346,7 +360,17 @@ export default function TvSessionDisplay({
             className="secondary"
             disabled={!hasAppLinks}
             onClick={() =>
-              setQrMode((mode) => (mode === "session" ? "apps" : "session"))
+              setQrMode((prev) => {
+                const next = prev === "session" ? "apps" : "session";
+                if (next === "apps") {
+                  requestAnimationFrame(() =>
+                    appQrRef.current?.scrollIntoView({ behavior: "smooth" })
+                  );
+                } else {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+                return next;
+              })
             }
           >
             {qrMode === "session" ? "Show app downloads" : "Show session QR"}
@@ -356,7 +380,7 @@ export default function TvSessionDisplay({
 
       {/* App download QR codes */}
       {qrMode === "apps" && (
-        <div className="tv-app-qr">
+        <div className="tv-app-qr" ref={appQrRef}>
           <div className="tv-app-qr-item">
             {androidUrl ? (
               <div className="tv-qr-card">

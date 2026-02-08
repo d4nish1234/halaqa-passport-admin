@@ -1018,6 +1018,15 @@ body:has(.tv-shell) footer {
   color: var(--tv-muted);
 }
 
+/* ── TV back button ── */
+
+.tv-back {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 2;
+}
+
 /* ── TV footer area ── */
 
 .tv-footer {
