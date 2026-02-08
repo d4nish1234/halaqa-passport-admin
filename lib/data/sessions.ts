@@ -1,4 +1,5 @@
 import { getAdminFirestore } from "@/lib/firebase/admin";
+import { Timestamp } from "firebase-admin/firestore";
 import type { Session, SessionRecord } from "@/lib/data/types";
 import { listSeriesForUser } from "@/lib/data/series";
 import { deleteAttendanceForSession } from "@/lib/data/attendance";
@@ -65,12 +66,25 @@ export async function getSession(sessionId: string): Promise<Session | null> {
   return { id: doc.id, ...(doc.data() as SessionRecord) };
 }
 
-export async function createSession(record: Omit<SessionRecord, "createdAt">) {
+type CreateSessionInput = {
+  seriesId: string;
+  startAt: Date;
+  checkinOpenAt: Date;
+  checkinCloseAt: Date;
+  token: string | null;
+  createdBy: string;
+};
+
+export async function createSession(record: CreateSessionInput) {
   const db = getAdminFirestore();
   const payload: SessionRecord = {
-    ...record,
+    seriesId: record.seriesId,
+    startAt: Timestamp.fromDate(record.startAt),
+    checkinOpenAt: Timestamp.fromDate(record.checkinOpenAt),
+    checkinCloseAt: Timestamp.fromDate(record.checkinCloseAt),
     token: record.token ?? null,
-    createdAt: new Date() as any
+    createdBy: record.createdBy,
+    createdAt: Timestamp.fromDate(new Date())
   };
   const ref = await db.collection(COLLECTION).add(payload);
   return ref.id;

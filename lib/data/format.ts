@@ -29,3 +29,14 @@ export function formatDateTime(value: Timestamp | Date | null | undefined) {
     minute: "2-digit"
   });
 }
+
+export function parseLocalDateTime(value: string, timezoneOffset: number): Date | null {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const absOffset = Math.abs(timezoneOffset);
+  const sign = timezoneOffset > 0 ? "-" : "+";
+  const hours = String(Math.floor(absOffset / 60)).padStart(2, "0");
+  const minutes = String(absOffset % 60).padStart(2, "0");
+  const iso = `${normalized}:00${sign}${hours}:${minutes}`;
+  return new Date(iso);
+}

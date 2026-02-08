@@ -21,6 +21,10 @@ export async function GET(
   }
   const series = await getSeries(session.seriesId);
 
+  const closeAt = session.checkinCloseAt?.toDate?.()
+    ?? (session.checkinCloseAt ? new Date(session.checkinCloseAt as any) : null);
+  const isClosed = closeAt ? Date.now() > closeAt.getTime() : false;
+
   return NextResponse.json({
     id: session.id,
     seriesId: session.seriesId,
@@ -28,7 +32,7 @@ export async function GET(
     startAt: toIso(session.startAt),
     checkinOpenAt: toIso(session.checkinOpenAt),
     checkinCloseAt: toIso(session.checkinCloseAt),
-    token: session.token,
+    token: isClosed ? null : session.token,
     serverTime: new Date().toISOString()
   });
 }

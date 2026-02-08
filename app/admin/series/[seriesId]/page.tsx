@@ -11,10 +11,10 @@ import {
 import { listSessions, createSession } from "@/lib/data/sessions";
 import { listAttendance } from "@/lib/data/attendance";
 import { getParticipantsByIds } from "@/lib/data/participants";
-import { formatDateTime } from "@/lib/data/format";
+import { formatDateTime, parseLocalDateTime } from "@/lib/data/format";
 import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
-import { canManageSeries } from "@/lib/auth/series";
+import { canManageSeries, authorizeForSeries } from "@/lib/auth/series";
 import DeleteSessionButton from "@/components/DeleteSessionButton";
 import RewardsForm from "@/components/RewardsForm";
 import AttendanceExportLink from "@/components/AttendanceExportLink";
@@ -22,6 +22,7 @@ import CreateSessionModal from "@/components/CreateSessionModal";
 import EditSeriesModal from "@/components/EditSeriesModal";
 import ClientDateTime from "@/components/ClientDateTime";
 import AttendeeRow from "@/components/AttendeeRow";
+import CreateRecurringSessionsModal from "@/components/CreateRecurringSessionsModal";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -47,42 +48,20 @@ function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
-function parseLocalDateTime(value: string, timezoneOffset: number) {
-  const normalized = value.trim();
-  if (!normalized) return null;
-  const absOffset = Math.abs(timezoneOffset);
-  const sign = timezoneOffset > 0 ? "-" : "+";
-  const hours = String(Math.floor(absOffset / 60)).padStart(2, "0");
-  const minutes = String(absOffset % 60).padStart(2, "0");
-  const iso = `${normalized}:00${sign}${hours}:${minutes}`;
-  return new Date(iso);
-}
-
 async function createSessionAction(formData: FormData) {
   "use server";
   const seriesId = String(formData.get("seriesId") ?? "").trim();
   if (!seriesId) return;
 
-  const user = await getSessionUser();
-  if (!user?.email) return;
-  const currentSeries = await getSeries(seriesId);
-  const isAdmin = isAdminEmail(user.email);
-  if (
-    !currentSeries ||
-    !canManageSeries({ email: user.email, series: currentSeries, isAdmin }) ||
-    !currentSeries.isActive ||
-    currentSeries.completed
-  ) {
-    return;
-  }
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth || !auth.series.isActive || auth.series.completed) return;
+
   const startAtInput = String(formData.get("startAt") ?? "").trim();
   const checkinOpenAtInput = String(formData.get("checkinOpenAt") ?? "").trim();
   const checkinCloseAtInput = String(formData.get("checkinCloseAt") ?? "").trim();
   const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
 
-  if (!checkinOpenAtInput || !checkinCloseAtInput) {
-    return;
-  }
+  if (!checkinOpenAtInput || !checkinCloseAtInput) return;
 
   const effectiveStartAtInput = startAtInput || checkinOpenAtInput;
   const startAt = parseLocalDateTime(effectiveStartAtInput, timezoneOffset);
@@ -93,12 +72,46 @@ async function createSessionAction(formData: FormData) {
   const token = crypto.randomBytes(6).toString("hex");
   await createSession({
     seriesId,
-    startAt: startAt as any,
-    checkinOpenAt: checkinOpenAt as any,
-    checkinCloseAt: checkinCloseAt as any,
+    startAt,
+    checkinOpenAt,
+    checkinCloseAt,
     token,
-    createdBy: user.email
+    createdBy: auth.user.email
   });
+
+  redirect(`/admin/series/${seriesId}`);
+}
+
+async function createRecurringSessionsAction(formData: FormData) {
+  "use server";
+  const seriesId = String(formData.get("seriesId") ?? "").trim();
+  if (!seriesId) return;
+
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth || !auth.series.isActive || auth.series.completed) return;
+
+  const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
+  const rawOccurrences = formData.getAll("occurrences");
+  if (rawOccurrences.length === 0) return;
+
+  for (const raw of rawOccurrences) {
+    const [checkinOpenInput, checkinCloseInput] = String(raw).split("|");
+    if (!checkinOpenInput || !checkinCloseInput) continue;
+
+    const checkinOpenAt = parseLocalDateTime(checkinOpenInput, timezoneOffset);
+    const checkinCloseAt = parseLocalDateTime(checkinCloseInput, timezoneOffset);
+    if (!checkinOpenAt || !checkinCloseAt) continue;
+
+    const token = crypto.randomBytes(6).toString("hex");
+    await createSession({
+      seriesId,
+      startAt: checkinOpenAt,
+      checkinOpenAt,
+      checkinCloseAt,
+      token,
+      createdBy: auth.user.email
+    });
+  }
 
   redirect(`/admin/series/${seriesId}`);
 }
@@ -108,13 +121,8 @@ async function updateRewardsAction(formData: FormData) {
   const seriesId = String(formData.get("seriesId") ?? "").trim();
   if (!seriesId) return;
 
-  const [user, series] = await Promise.all([
-    getSessionUser(),
-    getSeries(seriesId)
-  ]);
-  if (!user?.email || !series) return;
-  const isAdmin = isAdminEmail(user.email);
-  if (!canManageSeries({ email: user.email, series, isAdmin })) return;
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth) return;
 
   const rawThresholds = formData.getAll("thresholds");
   const thresholds = Array.from(
@@ -136,19 +144,15 @@ async function addManagerAction(formData: FormData) {
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   if (!seriesId || !email) return;
 
-  const [user, series] = await Promise.all([
-    getSessionUser(),
-    getSeries(seriesId)
-  ]);
-  if (!user?.email || !series) return;
-  const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) return;
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth) return;
+  if (!auth.isAdmin && auth.series.createdBy !== auth.user.email) return;
 
-  if (email === series.createdBy.toLowerCase()) {
+  if (email === auth.series.createdBy.toLowerCase()) {
     redirect(`/admin/series/${seriesId}`);
   }
 
-  const managers = new Set((series.managers ?? []).map((item) => item.toLowerCase()));
+  const managers = new Set((auth.series.managers ?? []).map((item) => item.toLowerCase()));
   managers.add(email);
   await updateSeriesManagers(seriesId, Array.from(managers).sort());
   redirect(`/admin/series/${seriesId}`);
@@ -160,15 +164,11 @@ async function removeManagerAction(formData: FormData) {
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   if (!seriesId || !email) return;
 
-  const [user, series] = await Promise.all([
-    getSessionUser(),
-    getSeries(seriesId)
-  ]);
-  if (!user?.email || !series) return;
-  const isAdmin = isAdminEmail(user.email);
-  if (!isAdmin && series.createdBy !== user.email) return;
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth) return;
+  if (!auth.isAdmin && auth.series.createdBy !== auth.user.email) return;
 
-  const managers = (series.managers ?? [])
+  const managers = (auth.series.managers ?? [])
     .map((item) => item.toLowerCase())
     .filter((item) => item !== email);
   await updateSeriesManagers(seriesId, managers);
@@ -184,13 +184,10 @@ async function updateSeriesAction(formData: FormData) {
   const startDate = String(formData.get("startDate") ?? "").trim();
   if (!seriesId) return;
 
-  const currentSeries = await getSeries(seriesId);
-  const user = await getSessionUser();
-  if (!user?.email || !currentSeries) return;
-  const isAdmin = isAdminEmail(user.email);
-  if (!canManageSeries({ email: user.email, series: currentSeries, isAdmin })) return;
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth) return;
 
-  if (currentSeries.isActive && name && startDate) {
+  if (auth.series.isActive && name && startDate) {
     await updateSeriesDetails(seriesId, {
       name,
       startDate: new Date(startDate)
@@ -336,6 +333,11 @@ export default async function SeriesOverviewPage({
             </Link>
             <CreateSessionModal
               action={createSessionAction}
+              disabled={!series.isActive || series.completed}
+              seriesId={series.id}
+            />
+            <CreateRecurringSessionsModal
+              action={createRecurringSessionsAction}
               disabled={!series.isActive || series.completed}
               seriesId={series.id}
             />

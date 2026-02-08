@@ -1,4 +1,5 @@
 import { getAdminFirestore } from "@/lib/firebase/admin";
+import { Timestamp } from "firebase-admin/firestore";
 import type { Series, SeriesRecord } from "@/lib/data/types";
 
 const COLLECTION = "series";
@@ -54,7 +55,7 @@ export async function createSeries(record: Omit<SeriesRecord, "createdAt">) {
   const db = getAdminFirestore();
   const payload: SeriesRecord = {
     ...record,
-    createdAt: new Date() as any
+    createdAt: Timestamp.fromDate(new Date())
   };
   const ref = await db.collection(COLLECTION).add(payload);
   return ref.id;
@@ -84,7 +85,7 @@ export async function updateSeriesDetails(
   const db = getAdminFirestore();
   await db.collection(COLLECTION).doc(seriesId).update({
     name: updates.name,
-    startDate: updates.startDate as any
+    startDate: Timestamp.fromDate(updates.startDate)
   });
 }
 
