@@ -9,6 +9,9 @@ type LeaderboardEntry = {
   nickname: string | null;
   count: number;
   level: number;
+  xpTotal: number;
+  xpCurrentLevelAt: number;
+  xpNextLevelAt: number;
 };
 
 export async function GET(
@@ -35,11 +38,15 @@ export async function GET(
   const leaderboard: LeaderboardEntry[] = topEntries.map(
     ([participantId, count]) => {
       const participant = participantsById.get(participantId);
+      const xp = getLevelFromExperience(participant?.experience ?? 0);
       return {
         participantId,
         nickname: participant?.nickname?.trim() ?? null,
         count,
-        level: getLevelFromExperience(participant?.experience ?? 0).level
+        level: xp.level,
+        xpTotal: xp.total,
+        xpCurrentLevelAt: xp.currentLevelAt,
+        xpNextLevelAt: xp.nextLevelAt
       };
     }
   );
