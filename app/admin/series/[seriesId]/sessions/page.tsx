@@ -76,7 +76,7 @@ export default async function SessionsPage({
       createdBy: auth.user.email
     });
 
-    redirect(`/admin/series/${params.seriesId}/sessions?created=1`);
+    redirect(`/admin/series/${params.seriesId}/sessions?created=1&t=${Date.now()}`);
   }
 
   async function createRecurringSessionsAction(formData: FormData) {
@@ -107,7 +107,7 @@ export default async function SessionsPage({
       });
     }
 
-    redirect(`/admin/series/${params.seriesId}/sessions?created=1`);
+    redirect(`/admin/series/${params.seriesId}/sessions?created=1&t=${Date.now()}`);
   }
 
   const justCreated = searchParams?.created === "1";

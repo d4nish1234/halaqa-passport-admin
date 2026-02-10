@@ -23,6 +23,7 @@ import EditSeriesModal from "@/components/EditSeriesModal";
 import ClientDateTime from "@/components/ClientDateTime";
 import AttendeeRow from "@/components/AttendeeRow";
 import CreateRecurringSessionsModal from "@/components/CreateRecurringSessionsModal";
+import RemoveManagerButton from "@/components/RemoveManagerButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Toast from "@/components/Toast";
 import type { Timestamp } from "firebase-admin/firestore";
@@ -81,7 +82,7 @@ async function createSessionAction(formData: FormData) {
     createdBy: auth.user.email
   });
 
-  redirect(`/admin/series/${seriesId}?session=1`);
+  redirect(`/admin/series/${seriesId}?session=1&t=${Date.now()}`);
 }
 
 async function createRecurringSessionsAction(formData: FormData) {
@@ -115,7 +116,7 @@ async function createRecurringSessionsAction(formData: FormData) {
     });
   }
 
-  redirect(`/admin/series/${seriesId}?session=1`);
+  redirect(`/admin/series/${seriesId}?session=1&t=${Date.now()}`);
 }
 
 async function updateRewardsAction(formData: FormData) {
@@ -137,7 +138,7 @@ async function updateRewardsAction(formData: FormData) {
   ).sort((a, b) => a - b);
 
   await updateSeriesRewards(seriesId, thresholds);
-  redirect(`/admin/series/${seriesId}?rewards=1`);
+  redirect(`/admin/series/${seriesId}?rewards=1&t=${Date.now()}`);
 }
 
 async function addManagerAction(formData: FormData) {
@@ -157,7 +158,7 @@ async function addManagerAction(formData: FormData) {
   const managers = new Set((auth.series.managers ?? []).map((item) => item.toLowerCase()));
   managers.add(email);
   await updateSeriesManagers(seriesId, Array.from(managers).sort());
-  redirect(`/admin/series/${seriesId}`);
+  redirect(`/admin/series/${seriesId}?manager_added=1&t=${Date.now()}`);
 }
 
 async function removeManagerAction(formData: FormData) {
@@ -174,7 +175,7 @@ async function removeManagerAction(formData: FormData) {
     .map((item) => item.toLowerCase())
     .filter((item) => item !== email);
   await updateSeriesManagers(seriesId, managers);
-  redirect(`/admin/series/${seriesId}`);
+  redirect(`/admin/series/${seriesId}?manager_removed=1&t=${Date.now()}`);
 }
 
 async function updateSeriesAction(formData: FormData) {
@@ -197,7 +198,7 @@ async function updateSeriesAction(formData: FormData) {
   }
 
   await updateSeriesStatus(seriesId, { isActive, completed });
-  redirect(`/admin/series/${seriesId}?updated=1`);
+  redirect(`/admin/series/${seriesId}?updated=1&t=${Date.now()}`);
 }
 
 export default async function SeriesOverviewPage({
@@ -225,6 +226,8 @@ export default async function SeriesOverviewPage({
   const rewardsSaved = searchParams?.rewards === "1";
   const sessionCreated = searchParams?.session === "1";
   const seriesUpdated = searchParams?.updated === "1";
+  const managerAdded = searchParams?.manager_added === "1";
+  const managerRemoved = searchParams?.manager_removed === "1";
 
   const [sessions, attendance] = await Promise.all([
     listSessions(params.seriesId),
@@ -294,6 +297,8 @@ export default async function SeriesOverviewPage({
       <Toast message="Session created successfully." visible={sessionCreated} />
       <Toast message="Series updated successfully." visible={seriesUpdated} />
       <Toast message="Rewards saved successfully." visible={rewardsSaved} />
+      <Toast message="Manager added successfully." visible={managerAdded} />
+      <Toast message="Manager removed." visible={managerRemoved} />
       <div className="span-12">
         <Breadcrumbs
           items={[
@@ -531,13 +536,11 @@ export default async function SeriesOverviewPage({
                       <span className="perm-card-email">{email}</span>
                       <span style={{ color: "var(--muted)", fontSize: 12 }}>Manager</span>
                     </div>
-                    <form action={removeManagerAction}>
-                      <input type="hidden" name="seriesId" value={series.id} />
-                      <input type="hidden" name="email" value={email} />
-                      <button type="submit" className="secondary danger" style={{ padding: "6px 10px", fontSize: 12 }}>
-                        Remove
-                      </button>
-                    </form>
+                    <RemoveManagerButton
+                      email={email}
+                      action={removeManagerAction}
+                      seriesId={series.id}
+                    />
                   </div>
                 ))
               )}

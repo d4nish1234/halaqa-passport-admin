@@ -26,7 +26,7 @@ async function createSeriesAction(formData: FormData) {
     createdBy: user.email
   });
 
-  redirect("/admin/series?created=1");
+  redirect(`/admin/series?created=1&t=${Date.now()}`);
 }
 
 export default async function SeriesPage({
