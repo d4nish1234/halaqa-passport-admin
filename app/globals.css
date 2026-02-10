@@ -236,6 +236,13 @@ nav a:hover {
   margin: 0;
 }
 
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
 .grid {
   display: grid;
   gap: 20px;
@@ -401,6 +408,7 @@ button:disabled {
 
 .list-row-link:hover {
   background: #fffaf0;
+  border-color: var(--accent);
 }
 
 .inline-edit {
@@ -435,6 +443,80 @@ button:disabled {
   padding: 0;
   font: inherit;
   text-decoration: underline;
+}
+
+/* ── Breadcrumbs ── */
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumb-sep {
+  margin: 0 8px;
+  color: var(--border);
+}
+
+.breadcrumbs a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Empty states ── */
+
+.empty-state {
+  text-align: center;
+  padding: 20px 12px;
+}
+
+.empty-state p {
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+.empty-state p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Transitions ── */
+
+.list-row-link {
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+button {
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: #f6f2e8;
+  opacity: 1;
+}
+
+.badge {
+  transition: background 0.15s ease;
 }
 
 @keyframes spin {

@@ -52,7 +52,12 @@ export default async function AdminDashboard() {
             </Link>
           </div>
           {activeSeries.length === 0 ? (
-            <p>No active series yet.</p>
+            <div className="empty-state">
+              <p>No active series yet.</p>
+              <Link href="/admin/series?new=1" className="button-link">
+                Create your first series
+              </Link>
+            </div>
           ) : (
             <div className="list-divided">
               {activeSeries.map((item) => (
@@ -63,8 +68,10 @@ export default async function AdminDashboard() {
                 >
                   <div>
                     <strong>{item.name}</strong>
-                    {isAdmin ? ` (${item.createdBy})` : ""} ·{" "}
-                    {formatDate(item.startDate)}
+                    <div style={{ color: "var(--muted)", fontSize: 13, marginTop: 2 }}>
+                      {isAdmin ? `${item.createdBy} · ` : ""}
+                      Started {formatDate(item.startDate)}
+                    </div>
                   </div>
                 </Link>
               ))}
@@ -72,9 +79,16 @@ export default async function AdminDashboard() {
           )}
         </section>
         <section className="card">
-          <h2>Recent sessions</h2>
+          <div className="card-header">
+            <h2>Recent sessions</h2>
+          </div>
           {recentSessions.length === 0 ? (
-            <p>No sessions yet.</p>
+            <div className="empty-state">
+              <p>No sessions yet.</p>
+              <p style={{ color: "var(--muted)", fontSize: 13 }}>
+                Create a session from any active series to get started.
+              </p>
+            </div>
           ) : (
             <div className="list-divided">
               {recentSessions.map((session) => {
@@ -83,21 +97,29 @@ export default async function AdminDashboard() {
                   session.checkinCloseAt,
                   now
                 );
+                const badgeClass =
+                  status === "CLOSED"
+                    ? "badge closed"
+                    : status === "UPCOMING"
+                    ? "badge upcoming"
+                    : "badge";
                 return (
                 <div key={session.id} className="list-row">
                   <div>
-                    <strong>{formatDateTime(session.startAt)}</strong>
-                    <div style={{ color: "var(--muted)" }}>
-                      Series: {seriesById.get(session.seriesId) ?? session.seriesId}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <strong>{formatDateTime(session.startAt)}</strong>
+                      <span className={badgeClass}>{status}</span>
                     </div>
-                    <div style={{ color: "var(--muted)" }}>Status: {status}</div>
+                    <div style={{ color: "var(--muted)", fontSize: 13, marginTop: 2 }}>
+                      {seriesById.get(session.seriesId) ?? session.seriesId}
+                    </div>
                   </div>
                   {status !== "CLOSED" ? (
                     <Link
                       href={`/tv/${session.id}`}
                       className="button-link secondary"
                     >
-                      Open TV mode
+                      TV mode
                     </Link>
                   ) : null}
                 </div>

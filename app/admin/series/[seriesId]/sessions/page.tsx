@@ -13,6 +13,7 @@ import CreateRecurringSessionsModal from "@/components/CreateRecurringSessionsMo
 import ClientDateTime from "@/components/ClientDateTime";
 import { listAttendance } from "@/lib/data/attendance";
 import SessionAttendanceModal from "@/components/SessionAttendanceModal";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -162,10 +163,23 @@ export default async function SessionsPage({
   });
 
   return (
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: "Series", href: "/admin/series" },
+          { label: series.name, href: `/admin/series/${params.seriesId}` },
+          { label: "Sessions" }
+        ]}
+      />
     <section className="card">
       <div className="card-header">
         <h2>Sessions for {series.name}</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Link href={`/admin/series/${params.seriesId}`}>
+            <button type="button" className="secondary">
+              Back to series
+            </button>
+          </Link>
           <CreateSessionModal
             action={createSessionAction}
             disabled={!series.isActive || series.completed}
@@ -246,5 +260,6 @@ export default async function SessionsPage({
         </table>
       )}
     </section>
+    </div>
   );
 }

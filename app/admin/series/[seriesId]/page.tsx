@@ -23,6 +23,7 @@ import EditSeriesModal from "@/components/EditSeriesModal";
 import ClientDateTime from "@/components/ClientDateTime";
 import AttendeeRow from "@/components/AttendeeRow";
 import CreateRecurringSessionsModal from "@/components/CreateRecurringSessionsModal";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -287,6 +288,14 @@ export default async function SeriesOverviewPage({
 
   return (
     <div className="grid cols-12">
+      <div className="span-12">
+        <Breadcrumbs
+          items={[
+            { label: "Series", href: "/admin/series" },
+            { label: series.name }
+          ]}
+        />
+      </div>
       <section className="card span-12">
         <div className="card-header">
           <h2>Series details</h2>
@@ -312,11 +321,21 @@ export default async function SeriesOverviewPage({
             <tr>
               <th>Status</th>
               <td>
-                {series.completed
-                  ? "Completed"
-                  : series.isActive
-                  ? "Active"
-                  : "Inactive"}
+                <span
+                  className={
+                    series.completed
+                      ? "badge closed"
+                      : series.isActive
+                      ? "badge"
+                      : "badge upcoming"
+                  }
+                >
+                  {series.completed
+                    ? "Completed"
+                    : series.isActive
+                    ? "Active"
+                    : "Inactive"}
+                </span>
               </td>
             </tr>
           </tbody>
@@ -325,32 +344,40 @@ export default async function SeriesOverviewPage({
       <section className="card span-7">
         <div className="card-header">
           <h2>Recent sessions</h2>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link href={`/admin/series/${params.seriesId}/sessions`}>
-              <button type="button" className="secondary">
-                Show all sessions
-              </button>
-            </Link>
+          <Link href={`/admin/series/${params.seriesId}/sessions`}>
+            <button type="button" className="secondary">
+              View all
+            </button>
+          </Link>
+        </div>
+        {series.isActive && !series.completed ? (
+          <div className="card-actions">
             <CreateSessionModal
               action={createSessionAction}
-              disabled={!series.isActive || series.completed}
+              disabled={false}
               seriesId={series.id}
             />
             <CreateRecurringSessionsModal
               action={createRecurringSessionsAction}
-              disabled={!series.isActive || series.completed}
+              disabled={false}
               seriesId={series.id}
             />
           </div>
-        </div>
-        {!series.isActive || series.completed ? (
+        ) : (
           <p style={{ color: "var(--muted)" }}>
             This series is inactive or completed. Reactivate it to create new
             sessions.
           </p>
-        ) : null}
+        )}
         {sessionsWithStatus.length === 0 ? (
-          <p>No sessions yet.</p>
+          <div className="empty-state">
+            <p>No sessions yet.</p>
+            {series.isActive && !series.completed ? (
+              <p style={{ color: "var(--muted)", fontSize: 13 }}>
+                Create a session above to generate a QR code for check-ins.
+              </p>
+            ) : null}
+          </div>
         ) : (
           <table className="table">
             <thead>
@@ -399,29 +426,25 @@ export default async function SeriesOverviewPage({
       </section>
 
       <section className="card span-5">
-        <h2>Top attendees</h2>
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            justifyContent: "flex-end",
-            marginBottom: 12,
-            flexWrap: "wrap"
-          }}
-        >
+        <div className="card-header">
+          <h2>Top attendees</h2>
+          <Link href={`/admin/series/${params.seriesId}/attendees`}>
+            <button type="button" className="secondary">
+              View all
+            </button>
+          </Link>
+        </div>
+        <div className="card-actions">
           <AttendanceExportLink
             seriesId={params.seriesId}
             label="Export Attendance"
             className="secondary"
           />
-          <Link href={`/admin/series/${params.seriesId}/attendees`}>
-            <button type="button" className="secondary">
-              Show all attendees
-            </button>
-          </Link>
         </div>
         {sortedParticipants.length === 0 ? (
-          <p>No attendance records yet.</p>
+          <div className="empty-state">
+            <p>No attendance records yet.</p>
+          </div>
         ) : (
           <table className="table">
             <thead>

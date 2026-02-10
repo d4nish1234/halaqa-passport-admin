@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { canManageSeries } from "@/lib/auth/series";
 import AttendeeRow from "@/components/AttendeeRow";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default async function SeriesAttendeesPage({
   params
@@ -42,6 +43,14 @@ export default async function SeriesAttendeesPage({
   const participantsById = await getParticipantsByIds(participantIds);
 
   return (
+    <div>
+      <Breadcrumbs
+        items={[
+          { label: "Series", href: "/admin/series" },
+          { label: series.name, href: `/admin/series/${params.seriesId}` },
+          { label: "Attendees" }
+        ]}
+      />
     <section className="card">
       <div className="card-header">
         <h2>All attendees for {series.name}</h2>
@@ -80,5 +89,6 @@ export default async function SeriesAttendeesPage({
         </table>
       )}
     </section>
+    </div>
   );
 }
