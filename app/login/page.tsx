@@ -78,7 +78,7 @@ export default function LoginPage() {
             )}
           </button>
           {error && (
-            <p style={{ color: "#8a2b2b", marginTop: 12 }}>{error}</p>
+            <p className="field-error" style={{ marginTop: 12 }}>{error}</p>
           )}
         </section>
       </main>

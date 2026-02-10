@@ -14,6 +14,7 @@ import ClientDateTime from "@/components/ClientDateTime";
 import { listAttendance } from "@/lib/data/attendance";
 import SessionAttendanceModal from "@/components/SessionAttendanceModal";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import Toast from "@/components/Toast";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -36,9 +37,11 @@ function getSessionStatus(
 }
 
 export default async function SessionsPage({
-  params
+  params,
+  searchParams
 }: {
   params: { seriesId: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const series = await getSeries(params.seriesId);
   if (!series) {
@@ -73,7 +76,7 @@ export default async function SessionsPage({
       createdBy: auth.user.email
     });
 
-    redirect(`/admin/series/${params.seriesId}/sessions`);
+    redirect(`/admin/series/${params.seriesId}/sessions?created=1`);
   }
 
   async function createRecurringSessionsAction(formData: FormData) {
@@ -104,8 +107,10 @@ export default async function SessionsPage({
       });
     }
 
-    redirect(`/admin/series/${params.seriesId}/sessions`);
+    redirect(`/admin/series/${params.seriesId}/sessions?created=1`);
   }
+
+  const justCreated = searchParams?.created === "1";
 
   const [sessions, attendance] = await Promise.all([
     listSessions(params.seriesId),
@@ -164,6 +169,7 @@ export default async function SessionsPage({
 
   return (
     <div>
+      <Toast message="Session created successfully." visible={justCreated} />
       <Breadcrumbs
         items={[
           { label: "Series", href: "/admin/series" },
@@ -199,7 +205,14 @@ export default async function SessionsPage({
         </p>
       ) : null}
       {sessions.length === 0 ? (
-        <p>No sessions yet.</p>
+        <div className="empty-state">
+          <p>No sessions yet.</p>
+          {series.isActive && !series.completed ? (
+            <p style={{ fontSize: 13 }}>
+              Create a session to generate a QR code for check-ins.
+            </p>
+          ) : null}
+        </div>
       ) : (
         <table className="table">
           <thead>

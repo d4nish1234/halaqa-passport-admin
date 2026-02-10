@@ -24,6 +24,7 @@ import ClientDateTime from "@/components/ClientDateTime";
 import AttendeeRow from "@/components/AttendeeRow";
 import CreateRecurringSessionsModal from "@/components/CreateRecurringSessionsModal";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import Toast from "@/components/Toast";
 import type { Timestamp } from "firebase-admin/firestore";
 
 type SessionStatus = "OPEN" | "CLOSED" | "UPCOMING" | "UNKNOWN";
@@ -80,7 +81,7 @@ async function createSessionAction(formData: FormData) {
     createdBy: auth.user.email
   });
 
-  redirect(`/admin/series/${seriesId}`);
+  redirect(`/admin/series/${seriesId}?session=1`);
 }
 
 async function createRecurringSessionsAction(formData: FormData) {
@@ -114,7 +115,7 @@ async function createRecurringSessionsAction(formData: FormData) {
     });
   }
 
-  redirect(`/admin/series/${seriesId}`);
+  redirect(`/admin/series/${seriesId}?session=1`);
 }
 
 async function updateRewardsAction(formData: FormData) {
@@ -196,7 +197,7 @@ async function updateSeriesAction(formData: FormData) {
   }
 
   await updateSeriesStatus(seriesId, { isActive, completed });
-  redirect(`/admin/series/${seriesId}`);
+  redirect(`/admin/series/${seriesId}?updated=1`);
 }
 
 export default async function SeriesOverviewPage({
@@ -222,6 +223,8 @@ export default async function SeriesOverviewPage({
     ? series.startDate.toDate().toISOString().slice(0, 10)
     : "";
   const rewardsSaved = searchParams?.rewards === "1";
+  const sessionCreated = searchParams?.session === "1";
+  const seriesUpdated = searchParams?.updated === "1";
 
   const [sessions, attendance] = await Promise.all([
     listSessions(params.seriesId),
@@ -288,6 +291,9 @@ export default async function SeriesOverviewPage({
 
   return (
     <div className="grid cols-12">
+      <Toast message="Session created successfully." visible={sessionCreated} />
+      <Toast message="Series updated successfully." visible={seriesUpdated} />
+      <Toast message="Rewards saved successfully." visible={rewardsSaved} />
       <div className="span-12">
         <Breadcrumbs
           items={[
@@ -484,9 +490,6 @@ export default async function SeriesOverviewPage({
         <p style={{ color: "var(--muted)" }}>
           Add check-in thresholds to unlock awards in the mobile app.
         </p>
-        {rewardsSaved ? (
-          <p style={{ color: "var(--accent-strong)" }}>Rewards saved.</p>
-        ) : null}
         <RewardsForm
           seriesId={series.id}
           initialRewards={series.rewards ?? []}

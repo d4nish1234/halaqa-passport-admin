@@ -36,9 +36,36 @@ export default function CreateRecurringSessionsModal({
   const [intervalDays, setIntervalDays] = useState(7);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [step, setStep] = useState<"form" | "preview">("form");
+  const [errors, setErrors] = useState<{
+    startDate?: string;
+    checkinOpenTime?: string;
+    checkinCloseTime?: string;
+  }>({});
+
+  function validate() {
+    const next: {
+      startDate?: string;
+      checkinOpenTime?: string;
+      checkinCloseTime?: string;
+    } = {};
+    if (!startDate) {
+      next.startDate = "First session date is required.";
+    }
+    if (!checkinOpenTime) {
+      next.checkinOpenTime = "Check-in open time is required.";
+    }
+    if (!checkinCloseTime) {
+      next.checkinCloseTime = "Check-in close time is required.";
+    }
+    if (checkinOpenTime && checkinCloseTime && checkinCloseTime <= checkinOpenTime) {
+      next.checkinCloseTime = "Close time must be after open time.";
+    }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  }
 
   function generateOccurrences() {
-    if (!startDate || !checkinOpenTime || !checkinCloseTime || repeatCount < 1) return;
+    if (!validate()) return;
     const items: Occurrence[] = [];
     for (let i = 0; i < repeatCount; i++) {
       const date = addDays(startDate, i * intervalDays);
@@ -69,6 +96,7 @@ export default function CreateRecurringSessionsModal({
     setIntervalDays(7);
     setOccurrences([]);
     setStep("form");
+    setErrors({});
   }
 
   const activeOccurrences = occurrences.filter((item) => !item.removed);
@@ -114,27 +142,45 @@ export default function CreateRecurringSessionsModal({
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  if (errors.startDate)
+                    setErrors((prev) => ({ ...prev, startDate: undefined }));
+                }}
               />
+              {errors.startDate && (
+                <span className="field-error">{errors.startDate}</span>
+              )}
             </label>
             <label>
               Check-in opens at
               <input
                 type="time"
                 value={checkinOpenTime}
-                onChange={(e) => setCheckinOpenTime(e.target.value)}
-                required
+                onChange={(e) => {
+                  setCheckinOpenTime(e.target.value);
+                  if (errors.checkinOpenTime)
+                    setErrors((prev) => ({ ...prev, checkinOpenTime: undefined }));
+                }}
               />
+              {errors.checkinOpenTime && (
+                <span className="field-error">{errors.checkinOpenTime}</span>
+              )}
             </label>
             <label>
               Check-in closes at
               <input
                 type="time"
                 value={checkinCloseTime}
-                onChange={(e) => setCheckinCloseTime(e.target.value)}
-                required
+                onChange={(e) => {
+                  setCheckinCloseTime(e.target.value);
+                  if (errors.checkinCloseTime)
+                    setErrors((prev) => ({ ...prev, checkinCloseTime: undefined }));
+                }}
               />
+              {errors.checkinCloseTime && (
+                <span className="field-error">{errors.checkinCloseTime}</span>
+              )}
             </label>
             <label>
               Repeat every (days)
@@ -160,7 +206,6 @@ export default function CreateRecurringSessionsModal({
               <button
                 type="button"
                 onClick={generateOccurrences}
-                disabled={!startDate || !checkinOpenTime || !checkinCloseTime}
               >
                 Preview sessions
               </button>
