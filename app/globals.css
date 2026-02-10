@@ -683,6 +683,129 @@ form {
   color: var(--accent);
 }
 
+/* ── Help Modal ── */
+
+.modal-help {
+  width: min(580px, 92vw);
+}
+
+.help-intro {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.help-steps {
+  display: grid;
+  gap: 16px;
+}
+
+.help-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 12px;
+  background: #faf8f4;
+  border: 1px solid var(--border);
+}
+
+.help-step-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.help-step-content strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.help-step-content p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.help-tip {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #efe8d9;
+  font-size: 13px;
+  color: #7b5b13;
+  line-height: 1.5;
+}
+
+/* ── Dashboard ── */
+
+.dash-greeting {
+  margin-bottom: 24px;
+}
+
+.dash-greeting h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.dash-greeting p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.dash-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.dash-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 16px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(31, 22, 10, 0.04);
+}
+
+.dash-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent-strong);
+  line-height: 1;
+}
+
+.dash-stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.dash-series-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e8efe5;
+  color: var(--accent-strong);
+  flex-shrink: 0;
+}
+
 /* ── TV Mode — Dark Kahoot-inspired theme ── */
 
 .tv-shell {
@@ -1231,8 +1354,21 @@ body:has(.tv-shell) footer {
 
   .span-8,
   .span-4,
+  .span-5,
+  .span-6,
+  .span-7,
   .span-2,
   .span-12 {
     grid-column: 1 / -1;
+  }
+
+  .dash-stats {
+    flex-direction: column;
+  }
+
+  .help-step {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
   }
 }
