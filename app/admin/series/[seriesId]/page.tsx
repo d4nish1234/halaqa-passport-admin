@@ -395,49 +395,36 @@ export default async function SeriesOverviewPage({
             ) : null}
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Start</th>
-                <th>Check-in</th>
-                <th>Status</th>
-                <th>Attendance</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {sessionsWithStatus.map(
-                ({ session, status, badgeClass, startAt, checkinOpenAt, checkinCloseAt }) => (
-                <tr key={session.id}>
-                  <td>
+          <div className="list-divided">
+            {sessionsWithStatus.map(
+              ({ session, status, badgeClass, startAt, checkinOpenAt, checkinCloseAt }) => (
+              <div key={session.id} className="session-card">
+                <div className="session-card-info">
+                  <div className="session-card-date">
                     <ClientDateTime value={startAt} format="datetime" />
-                  </td>
-                  <td>
-                    <ClientDateTime value={checkinOpenAt} format="time" /> -{" "}
+                  </div>
+                  <div className="session-card-meta">
+                    <ClientDateTime value={checkinOpenAt} format="time" /> –{" "}
                     <ClientDateTime value={checkinCloseAt} format="time" />
-                  </td>
-                  <td>
-                    <span className={badgeClass}>{status}</span>
-                  </td>
-                  <td>{sessionCounts.get(session.id) ?? 0}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      {status !== "CLOSED" ? (
-                        <Link
-                          href={`/tv/${session.id}`}
-                          className="button-link secondary"
-                        >
-                          TV mode
-                        </Link>
-                      ) : null}
-                      <DeleteSessionButton sessionId={session.id} />
-                    </div>
-                  </td>
-                </tr>
-              )
-              )}
-            </tbody>
-          </table>
+                    {" · "}{sessionCounts.get(session.id) ?? 0} attended
+                  </div>
+                </div>
+                <div className="session-card-right">
+                  <span className={badgeClass}>{status}</span>
+                  {status !== "CLOSED" ? (
+                    <Link
+                      href={`/tv/${session.id}`}
+                      className="button-link secondary"
+                    >
+                      TV mode
+                    </Link>
+                  ) : null}
+                  <DeleteSessionButton sessionId={session.id} />
+                </div>
+              </div>
+            )
+            )}
+          </div>
         )}
       </section>
 
