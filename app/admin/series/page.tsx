@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { isAdminEmail } from "@/lib/auth/admin";
 import CreateSeriesModal from "@/components/CreateSeriesModal";
 import SeriesRow from "@/components/SeriesRow";
+import Toast from "@/components/Toast";
 
 async function createSeriesAction(formData: FormData) {
   "use server";
@@ -25,7 +26,7 @@ async function createSeriesAction(formData: FormData) {
     createdBy: user.email
   });
 
-  redirect("/admin/series");
+  redirect("/admin/series?created=1");
 }
 
 export default async function SeriesPage({
@@ -40,78 +41,65 @@ export default async function SeriesPage({
   const isAdmin = isAdminEmail(user.email);
   const series = await listSeriesForUser({ email: user.email, isAdmin });
   const openOnLoad = searchParams?.new === "1";
+  const justCreated = searchParams?.created === "1";
   const activeSeries = series.filter((item) => item.isActive && !item.completed);
   const inactiveSeries = series.filter((item) => !item.isActive || item.completed);
 
   return (
     <div>
+      <Toast message="Series created successfully." visible={justCreated} />
+
       <section className="card">
         <div className="card-header">
           <h2>Active series</h2>
           <CreateSeriesModal action={createSeriesAction} openOnLoad={openOnLoad} />
         </div>
         {activeSeries.length === 0 ? (
-          <p>No series yet.</p>
+          <div className="empty-state">
+            <p>No active series yet.</p>
+            <p style={{ fontSize: 13 }}>
+              Create a series to start tracking attendance.
+            </p>
+          </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Start</th>
-                {isAdmin ? <th>Created by</th> : null}
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeSeries.map((item) => (
-                <SeriesRow
-                  key={item.id}
-                  href={`/admin/series/${item.id}`}
-                  name={item.name}
-                  startDate={formatDate(item.startDate)}
-                  createdBy={isAdmin ? item.createdBy : null}
-                  status={
-                    item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"
-                  }
-                />
-              ))}
-            </tbody>
-          </table>
+          <div className="list-divided">
+            {activeSeries.map((item) => (
+              <SeriesRow
+                key={item.id}
+                href={`/admin/series/${item.id}`}
+                name={item.name}
+                startDate={formatDate(item.startDate)}
+                createdBy={isAdmin ? item.createdBy : null}
+                status={
+                  item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"
+                }
+              />
+            ))}
+          </div>
         )}
       </section>
-      <section className="card" style={{ marginTop: 24 }}>
-        <div className="card-header">
-          <h2>Inactive/Completed series</h2>
-        </div>
-        {inactiveSeries.length === 0 ? (
-          <p>No inactive series.</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Start</th>
-                {isAdmin ? <th>Created by</th> : null}
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inactiveSeries.map((item) => (
-                <SeriesRow
-                  key={item.id}
-                  href={`/admin/series/${item.id}`}
-                  name={item.name}
-                  startDate={formatDate(item.startDate)}
-                  createdBy={isAdmin ? item.createdBy : null}
-                  status={
-                    item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"
-                  }
-                />
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
+
+      {inactiveSeries.length > 0 && (
+        <section className="card" style={{ marginTop: 20 }}>
+          <div className="card-header">
+            <h2>Inactive / Completed</h2>
+          </div>
+          <div className="list-divided">
+            {inactiveSeries.map((item) => (
+              <SeriesRow
+                key={item.id}
+                href={`/admin/series/${item.id}`}
+                name={item.name}
+                startDate={formatDate(item.startDate)}
+                createdBy={isAdmin ? item.createdBy : null}
+                status={
+                  item.completed ? "Completed" : item.isActive ? "Active" : "Inactive"
+                }
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

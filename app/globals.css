@@ -588,6 +588,101 @@ form {
   color: #7b5b13;
 }
 
+/* ── Field errors ── */
+
+.field-error {
+  display: block;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
+/* ── Toast notifications ── */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-strong);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(31, 22, 10, 0.2);
+  z-index: 100;
+  animation: toast-in 0.3s ease-out;
+}
+
+.toast-icon {
+  display: inline-flex;
+  color: #a8e6cf;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ── Series card layout ── */
+
+.series-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.series-card:hover {
+  background: #fffaf0;
+  border-color: var(--accent);
+}
+
+.series-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.series-card-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.series-card-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.series-card-status {
+  flex-shrink: 0;
+}
+
+.series-card-arrow {
+  flex-shrink: 0;
+  color: var(--border);
+  transition: color 0.15s ease;
+}
+
+.series-card:hover .series-card-arrow {
+  color: var(--accent);
+}
+
 /* ── TV Mode — Dark Kahoot-inspired theme ── */
 
 .tv-shell {
