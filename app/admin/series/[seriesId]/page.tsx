@@ -314,38 +314,48 @@ export default async function SeriesOverviewPage({
             completed={series.completed}
           />
         </div>
-        <table className="table">
-          <tbody>
-            <tr>
-              <th>Name</th>
-              <td>{series.name}</td>
-            </tr>
-            <tr>
-              <th>Start</th>
-              <td>{formatDateTime(series.startDate)}</td>
-            </tr>
-            <tr>
-              <th>Status</th>
-              <td>
-                <span
-                  className={
-                    series.completed
-                      ? "badge closed"
-                      : series.isActive
-                      ? "badge"
-                      : "badge upcoming"
-                  }
-                >
-                  {series.completed
-                    ? "Completed"
+        <div className="detail-grid">
+          <div className="detail-item">
+            <span className="detail-label">Name</span>
+            <span className="detail-value">{series.name}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Start date</span>
+            <span className="detail-value">{formatDateTime(series.startDate)}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Status</span>
+            <span className="detail-value">
+              <span
+                className={
+                  series.completed
+                    ? "badge closed"
                     : series.isActive
-                    ? "Active"
-                    : "Inactive"}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    ? "badge"
+                    : "badge upcoming"
+                }
+              >
+                {series.completed
+                  ? "Completed"
+                  : series.isActive
+                  ? "Active"
+                  : "Inactive"}
+              </span>
+            </span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Sessions</span>
+            <span className="detail-value">{sessions.length}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Participants</span>
+            <span className="detail-value">{sortedParticipants.length}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Created by</span>
+            <span className="detail-value">{series.createdBy}</span>
+          </div>
+        </div>
       </section>
       <section className="card span-7">
         <div className="card-header">
@@ -464,16 +474,24 @@ export default async function SeriesOverviewPage({
             ))}
           </div>
         )}
-        <h3 style={{ marginTop: 24 }}>Perfect attendance</h3>
-        {perfectAttendance.length === 0 ? (
-          <p>No perfect attendance yet.</p>
-        ) : (
-          <ul>
-            {perfectAttendance.map(([participantId]) => (
-              <li key={participantId}>{displayName(participantId)}</li>
-            ))}
-          </ul>
-        )}
+        <div className="perfect-attendance-section">
+          <h3>Perfect attendance</h3>
+          {perfectAttendance.length === 0 ? (
+            <p style={{ color: "var(--muted)", fontSize: 13 }}>
+              {sessions.length === 0
+                ? "No sessions yet."
+                : "No one has attended every session yet."}
+            </p>
+          ) : (
+            <div className="perfect-attendance-list">
+              {perfectAttendance.map(([participantId]) => (
+                <span key={participantId} className="perfect-attendance-pill">
+                  {displayName(participantId)}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="card span-6">
@@ -492,56 +510,59 @@ export default async function SeriesOverviewPage({
         <h2>Permissions</h2>
         {canEditPermissions ? (
           <>
-            <p style={{ color: "var(--muted)" }}>
-              Add staff who can manage sessions, rewards, and attendance for
-              this series.
+            <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 12 }}>
+              Add staff who can manage sessions, rewards, and attendance.
             </p>
-            <form action={addManagerAction} style={{ marginBottom: 16 }}>
+            <form action={addManagerAction} className="perm-add-form">
               <input type="hidden" name="seriesId" value={series.id} />
-              <label>
-                Email address
+              <div className="perm-add-row">
                 <input type="email" name="email" placeholder="name@domain.com" />
-              </label>
-              <button type="submit" style={{ marginTop: 8 }}>
-                Add access
-              </button>
+                <button type="submit">Add</button>
+              </div>
             </form>
-            <div style={{ display: "grid", gap: 8 }}>
-              <div className="meta">Owner: {series.createdBy}</div>
+            <div className="perm-list">
+              <div className="perm-card">
+                <div className="perm-card-avatar">
+                  {series.createdBy.charAt(0).toUpperCase()}
+                </div>
+                <div className="perm-card-info">
+                  <span className="perm-card-email">{series.createdBy}</span>
+                  <span className="badge" style={{ fontSize: 11, padding: "2px 8px" }}>Owner</span>
+                </div>
+              </div>
               {managers.length === 0 ? (
-                <div className="meta">No additional managers yet.</div>
+                <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
+                  No additional managers yet.
+                </p>
               ) : (
                 managers.map((email) => (
-                  <form
-                    key={email}
-                    action={removeManagerAction}
-                    style={{ display: "flex", gap: 8, alignItems: "center" }}
-                  >
-                    <input type="hidden" name="seriesId" value={series.id} />
-                    <input type="hidden" name="email" value={email} />
-                    <span>{email}</span>
-                    <button type="submit" className="secondary danger">
-                      <span className="button-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M3 6h18" />
-                          <path d="M8 6V4h8v2" />
-                          <path d="M6 6l1 14h10l1-14" />
-                          <path d="M10 11v6" />
-                          <path d="M14 11v6" />
-                        </svg>
-                      </span>
-                      Remove
-                    </button>
-                  </form>
+                  <div key={email} className="perm-card">
+                    <div className="perm-card-avatar">
+                      {email.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="perm-card-info">
+                      <span className="perm-card-email">{email}</span>
+                      <span style={{ color: "var(--muted)", fontSize: 12 }}>Manager</span>
+                    </div>
+                    <form action={removeManagerAction}>
+                      <input type="hidden" name="seriesId" value={series.id} />
+                      <input type="hidden" name="email" value={email} />
+                      <button type="submit" className="secondary danger" style={{ padding: "6px 10px", fontSize: 12 }}>
+                        Remove
+                      </button>
+                    </form>
+                  </div>
                 ))
               )}
             </div>
           </>
         ) : (
-          <p style={{ color: "var(--muted)" }}>
-            You do not have access to manage permissions for this series. Please
-            contact {series.createdBy} to manage users for this series.
-          </p>
+          <div className="empty-state">
+            <p>You don&apos;t have permission to manage access.</p>
+            <p style={{ fontSize: 13 }}>
+              Contact {series.createdBy} to manage users for this series.
+            </p>
+          </div>
         )}
       </section>
     </div>
