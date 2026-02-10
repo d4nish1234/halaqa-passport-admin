@@ -806,6 +806,85 @@ form {
   flex-shrink: 0;
 }
 
+/* ── Attendee cards ── */
+
+.attendee-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  transition: background 0.15s ease;
+}
+
+.attendee-card:hover {
+  background: #fffaf0;
+}
+
+.attendee-card.editing {
+  padding: 10px 14px;
+}
+
+.attendee-card-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e8efe5;
+  color: var(--accent-strong);
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.attendee-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.attendee-card-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.attendee-card-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* ── Attendee summary ── */
+
+.attendee-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.attendee-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #faf8f4;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.attendee-summary-value {
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.attendee-summary-label {
+  color: var(--muted);
+}
+
 /* ── TV Mode — Dark Kahoot-inspired theme ── */
 
 .tv-shell {

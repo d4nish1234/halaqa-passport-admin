@@ -452,26 +452,17 @@ export default async function SeriesOverviewPage({
             <p>No attendance records yet.</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nickname</th>
-                <th>Sessions attended</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {sortedParticipants.slice(0, 10).map(([participantId, count]) => (
-                <AttendeeRow
-                  key={participantId}
-                  seriesId={params.seriesId}
-                  participantId={participantId}
-                  nickname={participantsById.get(participantId)?.nickname?.trim() ?? null}
-                  count={count}
-                />
-              ))}
-            </tbody>
-          </table>
+          <div className="list-divided">
+            {sortedParticipants.slice(0, 10).map(([participantId, count]) => (
+              <AttendeeRow
+                key={participantId}
+                seriesId={params.seriesId}
+                participantId={participantId}
+                nickname={participantsById.get(participantId)?.nickname?.trim() ?? null}
+                count={count}
+              />
+            ))}
+          </div>
         )}
         <h3 style={{ marginTop: 24 }}>Perfect attendance</h3>
         {perfectAttendance.length === 0 ? (
