@@ -110,6 +110,7 @@ export default async function SessionsPage({
     redirect(`/admin/series/${params.seriesId}/sessions?created=1&t=${Date.now()}`);
   }
 
+  const toastKey = String(searchParams?.t ?? "");
   const justCreated = searchParams?.created === "1";
 
   const [sessions, attendance] = await Promise.all([
@@ -169,7 +170,7 @@ export default async function SessionsPage({
 
   return (
     <div>
-      <Toast message="Session created successfully." visible={justCreated} />
+      <Toast key={toastKey} message="Session created successfully." visible={justCreated} />
       <Breadcrumbs
         items={[
           { label: "Series", href: "/admin/series" },

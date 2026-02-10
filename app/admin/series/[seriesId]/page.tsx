@@ -223,6 +223,7 @@ export default async function SeriesOverviewPage({
   const startDateValue = series.startDate
     ? series.startDate.toDate().toISOString().slice(0, 10)
     : "";
+  const toastKey = String(searchParams?.t ?? "");
   const rewardsSaved = searchParams?.rewards === "1";
   const sessionCreated = searchParams?.session === "1";
   const seriesUpdated = searchParams?.updated === "1";
@@ -294,11 +295,11 @@ export default async function SeriesOverviewPage({
 
   return (
     <div className="grid cols-12">
-      <Toast message="Session created successfully." visible={sessionCreated} />
-      <Toast message="Series updated successfully." visible={seriesUpdated} />
-      <Toast message="Rewards saved successfully." visible={rewardsSaved} />
-      <Toast message="Manager added successfully." visible={managerAdded} />
-      <Toast message="Manager removed." visible={managerRemoved} />
+      <Toast key={`session-${toastKey}`} message="Session created successfully." visible={sessionCreated} />
+      <Toast key={`updated-${toastKey}`} message="Series updated successfully." visible={seriesUpdated} />
+      <Toast key={`rewards-${toastKey}`} message="Rewards saved successfully." visible={rewardsSaved} />
+      <Toast key={`mgr-add-${toastKey}`} message="Manager added successfully." visible={managerAdded} />
+      <Toast key={`mgr-rm-${toastKey}`} message="Manager removed." visible={managerRemoved} />
       <div className="span-12">
         <Breadcrumbs
           items={[

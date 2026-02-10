@@ -41,13 +41,14 @@ export default async function SeriesPage({
   const isAdmin = isAdminEmail(user.email);
   const series = await listSeriesForUser({ email: user.email, isAdmin });
   const openOnLoad = searchParams?.new === "1";
+  const toastKey = String(searchParams?.t ?? "");
   const justCreated = searchParams?.created === "1";
   const activeSeries = series.filter((item) => item.isActive && !item.completed);
   const inactiveSeries = series.filter((item) => !item.isActive || item.completed);
 
   return (
     <div>
-      <Toast message="Series created successfully." visible={justCreated} />
+      <Toast key={toastKey} message="Series created successfully." visible={justCreated} />
 
       <section className="card">
         <div className="card-header">
