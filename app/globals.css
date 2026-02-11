@@ -1647,7 +1647,9 @@ body:has(.tv-shell) footer {
 }
 
 .tv-shell .inline-edit-button {
+  background: transparent;
   color: var(--tv-muted);
+  padding: 0;
 }
 
 /* ── TV back button ── */
