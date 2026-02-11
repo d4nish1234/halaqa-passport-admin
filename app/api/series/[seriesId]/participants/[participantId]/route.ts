@@ -7,13 +7,14 @@ import { updateParticipantNickname } from "@/lib/data/participants";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { seriesId: string; participantId: string } }
+  { params }: { params: Promise<{ seriesId: string; participantId: string }> }
 ) {
+  const { seriesId, participantId } = await params;
   const user = await getSessionUser();
   if (!user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const series = await getSeries(params.seriesId);
+  const series = await getSeries(seriesId);
   if (!series) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -30,6 +31,6 @@ export async function PATCH(
     return NextResponse.json({ error: "Nickname is required." }, { status: 400 });
   }
 
-  await updateParticipantNickname(params.participantId, nickname);
+  await updateParticipantNickname(participantId, nickname);
   return NextResponse.json({ ok: true });
 }

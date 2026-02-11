@@ -205,10 +205,12 @@ export default async function SeriesOverviewPage({
   params,
   searchParams
 }: {
-  params: { seriesId: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ seriesId: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const series = await getSeries(params.seriesId);
+  const { seriesId } = await params;
+  const resolvedSearchParams = await searchParams;
+  const series = await getSeries(seriesId);
   if (!series) {
     redirect("/admin/series");
   }
@@ -223,16 +225,16 @@ export default async function SeriesOverviewPage({
   const startDateValue = series.startDate
     ? series.startDate.toDate().toISOString().slice(0, 10)
     : "";
-  const toastKey = String(searchParams?.t ?? "");
-  const rewardsSaved = searchParams?.rewards === "1";
-  const sessionCreated = searchParams?.session === "1";
-  const seriesUpdated = searchParams?.updated === "1";
-  const managerAdded = searchParams?.manager_added === "1";
-  const managerRemoved = searchParams?.manager_removed === "1";
+  const toastKey = String(resolvedSearchParams?.t ?? "");
+  const rewardsSaved = resolvedSearchParams?.rewards === "1";
+  const sessionCreated = resolvedSearchParams?.session === "1";
+  const seriesUpdated = resolvedSearchParams?.updated === "1";
+  const managerAdded = resolvedSearchParams?.manager_added === "1";
+  const managerRemoved = resolvedSearchParams?.manager_removed === "1";
 
   const [sessions, attendance] = await Promise.all([
-    listSessions(params.seriesId),
-    listAttendance(params.seriesId)
+    listSessions(seriesId),
+    listAttendance(seriesId)
   ]);
 
   const now = Date.now();
@@ -366,7 +368,7 @@ export default async function SeriesOverviewPage({
       <section className="card span-7">
         <div className="card-header">
           <h2>Recent sessions</h2>
-          <Link href={`/admin/series/${params.seriesId}/sessions`}>
+          <Link href={`/admin/series/${seriesId}/sessions`}>
             <button type="button" className="secondary">
               View all
             </button>
@@ -437,7 +439,7 @@ export default async function SeriesOverviewPage({
       <section className="card span-5">
         <div className="card-header">
           <h2>Top attendees</h2>
-          <Link href={`/admin/series/${params.seriesId}/attendees`}>
+          <Link href={`/admin/series/${seriesId}/attendees`}>
             <button type="button" className="secondary">
               View all
             </button>
@@ -445,7 +447,7 @@ export default async function SeriesOverviewPage({
         </div>
         <div className="card-actions">
           <AttendanceExportLink
-            seriesId={params.seriesId}
+            seriesId={seriesId}
             label="Export Attendance"
             className="secondary"
           />
@@ -459,7 +461,7 @@ export default async function SeriesOverviewPage({
             {sortedParticipants.slice(0, 10).map(([participantId, count]) => (
               <AttendeeRow
                 key={participantId}
-                seriesId={params.seriesId}
+                seriesId={seriesId}
                 participantId={participantId}
                 nickname={participantsById.get(participantId)?.nickname?.trim() ?? null}
                 count={count}

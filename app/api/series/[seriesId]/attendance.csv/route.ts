@@ -42,13 +42,14 @@ function formatLocalTimestamp(value: Timestamp | Date | null | undefined) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { seriesId: string } }
+  { params }: { params: Promise<{ seriesId: string }> }
 ) {
+  const { seriesId } = await params;
   const user = await getSessionUser();
   if (!user) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const series = await getSeries(params.seriesId);
+  const series = await getSeries(seriesId);
   if (!series) {
     return new Response("Not found", { status: 404 });
   }
@@ -58,8 +59,8 @@ export async function GET(
   }
 
   const [attendance, sessions] = await Promise.all([
-    listAttendance(params.seriesId),
-    listSessions(params.seriesId)
+    listAttendance(seriesId),
+    listSessions(seriesId)
   ]);
   const participantsById = await getParticipantsByIds(
     attendance.map((record) => record.participantId)
@@ -100,7 +101,7 @@ export async function GET(
   return new Response(lines.join("\n"), {
     headers: {
       "Content-Type": "text/csv",
-      "Content-Disposition": `attachment; filename=attendance-${params.seriesId}.csv`
+      "Content-Disposition": `attachment; filename=attendance-${seriesId}.csv`
     }
   });
 }

@@ -36,86 +36,95 @@ function getSessionStatus(
   return "OPEN";
 }
 
-export default async function SessionsPage({
-  params,
-  searchParams
-}: {
-  params: { seriesId: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
-  const series = await getSeries(params.seriesId);
-  if (!series) {
-    redirect("/admin/series");
-  }
+async function createSessionAction(formData: FormData) {
+  "use server";
+  const seriesId = String(formData.get("seriesId") ?? "").trim();
+  if (!seriesId) return;
 
-  async function createSessionAction(formData: FormData) {
-    "use server";
-    const auth = await authorizeForSeries(params.seriesId);
-    if (!auth || !auth.series.isActive || auth.series.completed) return;
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth || !auth.series.isActive || auth.series.completed) return;
 
-    const startAtInput = String(formData.get("startAt") ?? "").trim();
-    const checkinOpenAtInput = String(formData.get("checkinOpenAt") ?? "").trim();
-    const checkinCloseAtInput = String(formData.get("checkinCloseAt") ?? "").trim();
-    const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
+  const startAtInput = String(formData.get("startAt") ?? "").trim();
+  const checkinOpenAtInput = String(formData.get("checkinOpenAt") ?? "").trim();
+  const checkinCloseAtInput = String(formData.get("checkinCloseAt") ?? "").trim();
+  const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
 
-    if (!checkinOpenAtInput || !checkinCloseAtInput) return;
+  if (!checkinOpenAtInput || !checkinCloseAtInput) return;
 
-    const effectiveStartAtInput = startAtInput || checkinOpenAtInput;
-    const startAt = parseLocalDateTime(effectiveStartAtInput, timezoneOffset);
-    const checkinOpenAt = parseLocalDateTime(checkinOpenAtInput, timezoneOffset);
-    const checkinCloseAt = parseLocalDateTime(checkinCloseAtInput, timezoneOffset);
-    if (!startAt || !checkinOpenAt || !checkinCloseAt) return;
+  const effectiveStartAtInput = startAtInput || checkinOpenAtInput;
+  const startAt = parseLocalDateTime(effectiveStartAtInput, timezoneOffset);
+  const checkinOpenAt = parseLocalDateTime(checkinOpenAtInput, timezoneOffset);
+  const checkinCloseAt = parseLocalDateTime(checkinCloseAtInput, timezoneOffset);
+  if (!startAt || !checkinOpenAt || !checkinCloseAt) return;
+
+  const token = crypto.randomBytes(6).toString("hex");
+  await createSession({
+    seriesId,
+    startAt,
+    checkinOpenAt,
+    checkinCloseAt,
+    token,
+    createdBy: auth.user.email
+  });
+
+  redirect(`/admin/series/${seriesId}/sessions?created=1&t=${Date.now()}`);
+}
+
+async function createRecurringSessionsAction(formData: FormData) {
+  "use server";
+  const seriesId = String(formData.get("seriesId") ?? "").trim();
+  if (!seriesId) return;
+
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth || !auth.series.isActive || auth.series.completed) return;
+
+  const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
+  const rawOccurrences = formData.getAll("occurrences");
+  if (rawOccurrences.length === 0) return;
+
+  for (const raw of rawOccurrences) {
+    const [checkinOpenInput, checkinCloseInput] = String(raw).split("|");
+    if (!checkinOpenInput || !checkinCloseInput) continue;
+
+    const checkinOpenAt = parseLocalDateTime(checkinOpenInput, timezoneOffset);
+    const checkinCloseAt = parseLocalDateTime(checkinCloseInput, timezoneOffset);
+    if (!checkinOpenAt || !checkinCloseAt) continue;
 
     const token = crypto.randomBytes(6).toString("hex");
     await createSession({
-      seriesId: params.seriesId,
-      startAt,
+      seriesId,
+      startAt: checkinOpenAt,
       checkinOpenAt,
       checkinCloseAt,
       token,
       createdBy: auth.user.email
     });
-
-    redirect(`/admin/series/${params.seriesId}/sessions?created=1&t=${Date.now()}`);
   }
 
-  async function createRecurringSessionsAction(formData: FormData) {
-    "use server";
-    const auth = await authorizeForSeries(params.seriesId);
-    if (!auth || !auth.series.isActive || auth.series.completed) return;
+  redirect(`/admin/series/${seriesId}/sessions?created=1&t=${Date.now()}`);
+}
 
-    const timezoneOffset = Number(formData.get("timezoneOffset") ?? 0);
-    const rawOccurrences = formData.getAll("occurrences");
-    if (rawOccurrences.length === 0) return;
+export default async function SessionsPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ seriesId: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { seriesId } = await params;
+  const resolvedSearchParams = await searchParams;
 
-    for (const raw of rawOccurrences) {
-      const [checkinOpenInput, checkinCloseInput] = String(raw).split("|");
-      if (!checkinOpenInput || !checkinCloseInput) continue;
-
-      const checkinOpenAt = parseLocalDateTime(checkinOpenInput, timezoneOffset);
-      const checkinCloseAt = parseLocalDateTime(checkinCloseInput, timezoneOffset);
-      if (!checkinOpenAt || !checkinCloseAt) continue;
-
-      const token = crypto.randomBytes(6).toString("hex");
-      await createSession({
-        seriesId: params.seriesId,
-        startAt: checkinOpenAt,
-        checkinOpenAt,
-        checkinCloseAt,
-        token,
-        createdBy: auth.user.email
-      });
-    }
-
-    redirect(`/admin/series/${params.seriesId}/sessions?created=1&t=${Date.now()}`);
+  const series = await getSeries(seriesId);
+  if (!series) {
+    redirect("/admin/series");
   }
 
-  const toastKey = String(searchParams?.t ?? "");
-  const justCreated = searchParams?.created === "1";
+  const toastKey = String(resolvedSearchParams?.t ?? "");
+  const justCreated = resolvedSearchParams?.created === "1";
 
   const [sessions, attendance] = await Promise.all([
-    listSessions(params.seriesId),
-    listAttendance(params.seriesId)
+    listSessions(seriesId),
+    listAttendance(seriesId)
   ]);
   const user = await getSessionUser();
   if (!user?.email) {
@@ -174,14 +183,14 @@ export default async function SessionsPage({
       <Breadcrumbs
         items={[
           { label: "Series", href: "/admin/series" },
-          { label: series.name, href: `/admin/series/${params.seriesId}` },
+          { label: series.name, href: `/admin/series/${seriesId}` },
           { label: "Sessions" }
         ]}
       />
     <section className="card">
       <div className="card-header">
         <h2>Sessions</h2>
-        <Link href={`/admin/series/${params.seriesId}`}>
+        <Link href={`/admin/series/${seriesId}`}>
           <button type="button" className="secondary">
             Back to series
           </button>
@@ -238,7 +247,7 @@ export default async function SessionsPage({
                   {" · "}
                   <SessionAttendanceModal
                     sessionId={session.id}
-                    seriesId={params.seriesId}
+                    seriesId={seriesId}
                     count={attendanceCount}
                   />
                 </div>

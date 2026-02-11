@@ -16,14 +16,15 @@ type LeaderboardEntry = {
 
 export async function GET(
   _request: Request,
-  { params }: { params: { seriesId: string } }
+  { params }: { params: Promise<{ seriesId: string }> }
 ) {
-  const series = await getSeries(params.seriesId);
+  const { seriesId } = await params;
+  const series = await getSeries(seriesId);
   if (!series) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const attendance = await listAttendance(params.seriesId);
+  const attendance = await listAttendance(seriesId);
   const counts = new Map<string, number>();
   for (const record of attendance) {
     counts.set(record.participantId, (counts.get(record.participantId) ?? 0) + 1);

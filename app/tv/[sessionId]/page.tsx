@@ -11,9 +11,10 @@ function toIso(value: any) {
 export default async function TvPage({
   params
 }: {
-  params: { sessionId: string };
+  params: Promise<{ sessionId: string }>;
 }) {
-  const session = await getSession(params.sessionId);
+  const { sessionId } = await params;
+  const session = await getSession(sessionId);
   if (!session) {
     return (
       <div className="tv-shell">
@@ -37,7 +38,7 @@ export default async function TvPage({
 
   return (
     <TvSessionDisplay
-      sessionId={params.sessionId}
+      sessionId={sessionId}
       initialData={data}
       androidAppUrl={process.env.NEXT_PUBLIC_ANDROID_APP_URL}
       iosAppUrl={process.env.NEXT_PUBLIC_IOS_APP_URL}

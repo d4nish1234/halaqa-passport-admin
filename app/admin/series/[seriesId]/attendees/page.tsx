@@ -14,9 +14,10 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 export default async function SeriesAttendeesPage({
   params
 }: {
-  params: { seriesId: string };
+  params: Promise<{ seriesId: string }>;
 }) {
-  const series = await getSeries(params.seriesId);
+  const { seriesId } = await params;
+  const series = await getSeries(seriesId);
   if (!series) {
     redirect("/admin/series");
   }
@@ -30,8 +31,8 @@ export default async function SeriesAttendeesPage({
   }
 
   const [sessions, attendance] = await Promise.all([
-    listSessions(params.seriesId),
-    listAttendance(params.seriesId)
+    listSessions(seriesId),
+    listAttendance(seriesId)
   ]);
   const participantCounts = new Map<string, number>();
   for (const record of attendance) {
@@ -56,7 +57,7 @@ export default async function SeriesAttendeesPage({
       <Breadcrumbs
         items={[
           { label: "Series", href: "/admin/series" },
-          { label: series.name, href: `/admin/series/${params.seriesId}` },
+          { label: series.name, href: `/admin/series/${seriesId}` },
           { label: "Attendees" }
         ]}
       />
@@ -64,14 +65,14 @@ export default async function SeriesAttendeesPage({
       <div className="card-header">
         <h2>Attendees for {series.name}</h2>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Link href={`/admin/series/${params.seriesId}`}>
+          <Link href={`/admin/series/${seriesId}`}>
             <button type="button" className="secondary">
               Back to series
             </button>
           </Link>
           {sortedParticipants.length > 0 && (
             <AttendanceExportLink
-              seriesId={params.seriesId}
+              seriesId={seriesId}
               label="Export CSV"
               className="secondary"
             />
@@ -111,7 +112,7 @@ export default async function SeriesAttendeesPage({
             return (
               <AttendeeRow
                 key={participantId}
-                seriesId={params.seriesId}
+                seriesId={seriesId}
                 participantId={participantId}
                 nickname={nickname}
                 count={count}

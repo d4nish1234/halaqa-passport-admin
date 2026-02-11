@@ -32,17 +32,18 @@ async function createSeriesAction(formData: FormData) {
 export default async function SeriesPage({
   searchParams
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const resolvedSearchParams = await searchParams;
   const user = await getSessionUser();
   if (!user?.email) {
     return null;
   }
   const isAdmin = isAdminEmail(user.email);
   const series = await listSeriesForUser({ email: user.email, isAdmin });
-  const openOnLoad = searchParams?.new === "1";
-  const toastKey = String(searchParams?.t ?? "");
-  const justCreated = searchParams?.created === "1";
+  const openOnLoad = resolvedSearchParams?.new === "1";
+  const toastKey = String(resolvedSearchParams?.t ?? "");
+  const justCreated = resolvedSearchParams?.created === "1";
   const activeSeries = series.filter((item) => item.isActive && !item.completed);
   const inactiveSeries = series.filter((item) => !item.isActive || item.completed);
 

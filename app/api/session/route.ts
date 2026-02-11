@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const sessionCookie = await createSessionCookie(idToken);
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, sessionCookie, {
       httpOnly: true,
       secure: true,
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, "", {
     httpOnly: true,
     secure: true,

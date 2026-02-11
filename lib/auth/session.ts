@@ -18,7 +18,7 @@ export async function verifySessionCookie(sessionCookie: string) {
 }
 
 export async function getSessionUser() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionCookie) return null;
 

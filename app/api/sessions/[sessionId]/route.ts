@@ -13,9 +13,10 @@ function toIso(value: any) {
 
 export async function GET(
   _request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
-  const session = await getSession(params.sessionId);
+  const { sessionId } = await params;
+  const session = await getSession(sessionId);
   if (!session) {
     return NextResponse.json({ error: "Session not found." }, { status: 404 });
   }
@@ -39,13 +40,14 @@ export async function GET(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const { sessionId } = await params;
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const session = await getSession(params.sessionId);
+  const session = await getSession(sessionId);
   if (!session) {
     return NextResponse.json({ error: "Session not found." }, { status: 404 });
   }
@@ -58,6 +60,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await deleteSessionWithAttendance(params.sessionId);
+  await deleteSessionWithAttendance(sessionId);
   return NextResponse.json({ ok: true });
 }
