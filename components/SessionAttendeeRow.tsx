@@ -43,49 +43,54 @@ export default function SessionAttendeeRow({
 
   if (editing) {
     return (
-      <tr>
-        <td colSpan={3}>
-          <div className="inline-edit-row">
-            <input
-              type="text"
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-            />
-            <button type="button" onClick={handleSave} disabled={saving}>
-              Save
-            </button>
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => {
-                setValue(currentNickname);
-                setEditing(false);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </td>
-      </tr>
+      <div className="attendee-card editing">
+        <div className="inline-edit-row">
+          <input
+            type="text"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button type="button" onClick={handleSave} disabled={saving}>
+            Save
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              setValue(currentNickname);
+              setEditing(false);
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <tr>
-      <td>{label}</td>
-      <td>
-        {timestamp ? new Date(timestamp).toLocaleString("en-US") : "—"}
-      </td>
-      <td>
-        <button
-          type="button"
-          className="inline-edit-button"
-          onClick={() => setEditing(true)}
-          aria-label="Edit nickname"
-        >
-          ✏️
-        </button>
-      </td>
-    </tr>
+    <div className="attendee-card">
+      <div className="attendee-card-avatar">
+        {(currentNickname || "P").charAt(0).toUpperCase()}
+      </div>
+      <div className="attendee-card-info">
+        <div className="attendee-card-name">{label}</div>
+        <div className="attendee-card-meta">
+          {timestamp
+            ? `Checked in ${new Date(timestamp).toLocaleString("en-US")}`
+            : "No timestamp"}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="secondary"
+        onClick={() => setEditing(true)}
+        aria-label="Edit nickname"
+        style={{ padding: "6px 12px", fontSize: 13 }}
+      >
+        Edit
+      </button>
+    </div>
   );
 }

@@ -241,7 +241,6 @@ export default async function SessionsPage({
                     seriesId={params.seriesId}
                     count={attendanceCount}
                   />
-                  {" "}attended
                 </div>
               </div>
               <div className="session-card-right">

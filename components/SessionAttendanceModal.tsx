@@ -47,11 +47,11 @@ export default function SessionAttendanceModal({
   return (
     <>
       {count > 0 ? (
-        <button type="button" className="link-button" onClick={handleOpen}>
-          {count}
+        <button type="button" className="attendance-pill" onClick={handleOpen}>
+          {count} attended
         </button>
       ) : (
-        <span>{count}</span>
+        <span>0 attended</span>
       )}
       <dialog
         className="modal"
@@ -78,26 +78,17 @@ export default function SessionAttendanceModal({
           ) : attendees.length === 0 ? (
             <p>No attendance yet.</p>
           ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Participant</th>
-                  <th>Check-in</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {attendees.map((attendee) => (
-                  <SessionAttendeeRow
-                    key={attendee.participantId}
-                    seriesId={seriesId}
-                    participantId={attendee.participantId}
-                    nickname={attendee.nickname}
-                    timestamp={attendee.timestamp}
-                  />
-                ))}
-              </tbody>
-            </table>
+            <div className="list-divided">
+              {attendees.map((attendee) => (
+                <SessionAttendeeRow
+                  key={attendee.participantId}
+                  seriesId={seriesId}
+                  participantId={attendee.participantId}
+                  nickname={attendee.nickname}
+                  timestamp={attendee.timestamp}
+                />
+              ))}
+            </div>
           )}
         </div>
       </dialog>

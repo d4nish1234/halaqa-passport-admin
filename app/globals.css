@@ -445,6 +445,27 @@ button:disabled {
   text-decoration: underline;
 }
 
+.attendance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  background: #faf8f5;
+  color: var(--text);
+  cursor: pointer;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.attendance-pill:hover {
+  background: #f6f2e8;
+  border-color: var(--accent);
+}
+
 /* ── Breadcrumbs ── */
 
 .breadcrumbs {
