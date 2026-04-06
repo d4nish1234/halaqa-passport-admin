@@ -102,3 +102,13 @@ export async function updateSeriesManagers(seriesId: string, managers: string[])
     managers
   });
 }
+
+export async function updateSeriesPrizeSettings(
+  seriesId: string,
+  settings: { prizeExcludePastWinners: boolean }
+) {
+  const db = getAdminFirestore();
+  await db.collection(COLLECTION).doc(seriesId).update({
+    prizeExcludePastWinners: settings.prizeExcludePastWinners
+  });
+}

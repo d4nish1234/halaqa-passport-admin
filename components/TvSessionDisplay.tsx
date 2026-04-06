@@ -24,6 +24,7 @@ type LeaderboardEntry = {
   xpTotal: number;
   xpCurrentLevelAt: number;
   xpNextLevelAt: number;
+  prizeWinner: boolean;
 };
 
 type LeaderboardResponse = {
@@ -64,12 +65,14 @@ export default function TvSessionDisplay({
   sessionId,
   initialData,
   androidAppUrl,
-  iosAppUrl
+  iosAppUrl,
+  canDrawPrize = false
 }: {
   sessionId: string;
   initialData: TvSessionData;
   androidAppUrl?: string | null;
   iosAppUrl?: string | null;
+  canDrawPrize?: boolean;
 }) {
   const [data, setData] = useState(initialData);
   const [now, setNow] = useState(Date.now());
@@ -79,7 +82,64 @@ export default function TvSessionDisplay({
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [qrMode, setQrMode] = useState<"session" | "apps">("session");
   const [leaderboardKey, setLeaderboardKey] = useState(0);
+  const [drawingPrize, setDrawingPrize] = useState(false);
+  const [prizeWinner, setPrizeWinner] = useState<{
+    participantId: string;
+    nickname: string | null;
+    displayName: string;
+    prizeWinnerId: string;
+  } | null>(null);
+  const [prizeError, setPrizeError] = useState<string | null>(null);
   const router = useRouter();
+
+  const executeDraw = async (opts?: {
+    deletePrizeWinnerId: string;
+    excludeParticipantId: string;
+  }) => {
+    setDrawingPrize(true);
+    setPrizeError(null);
+    try {
+      const response = await fetch(`/api/series/${data.seriesId}/draw-prize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: data.id, ...opts })
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setPrizeError(payload.error ?? "Failed to draw prize.");
+      } else {
+        setPrizeWinner(payload.winner);
+        // Refresh leaderboard to reflect updated gift icons
+        const lbResponse = await fetch(
+          `/api/series/${data.seriesId}/leaderboard`,
+          { cache: "no-store" }
+        );
+        if (lbResponse.ok) {
+          const lbPayload = (await lbResponse.json()) as LeaderboardResponse;
+          setLeaderboard(lbPayload.leaderboard ?? []);
+          setLeaderboardKey((k) => k + 1);
+        }
+      }
+    } catch {
+      setPrizeError("Network error. Please try again.");
+    } finally {
+      setDrawingPrize(false);
+    }
+  };
+
+  const handleDrawPrize = () => {
+    setPrizeWinner(null);
+    executeDraw();
+  };
+
+  const handleReroll = () => {
+    if (!prizeWinner) return;
+    executeDraw({
+      deletePrizeWinnerId: prizeWinner.prizeWinnerId,
+      excludeParticipantId: prizeWinner.participantId
+    });
+  };
+
   const pollsRemainingRef = useRef(pollsRemaining);
   const leaderboardPollsRemainingRef = useRef(leaderboardPollsRemaining);
   const prevLeaderboardLengthRef = useRef(0);
@@ -294,6 +354,9 @@ export default function TvSessionDisplay({
                     <div className="tv-participant-info">
                       <div className="tv-participant-name">
                         <span>{name}</span>
+                        {entry.prizeWinner && (
+                          <span title="Prize winner" style={{ marginLeft: 4 }}>🎁</span>
+                        )}
                         <span className={`tv-level-pill ${tier}`}>
                           Lv {entry.level}
                         </span>
@@ -332,6 +395,60 @@ export default function TvSessionDisplay({
           )}
         </div>
       </div>
+
+      {/* Prize drawing controls */}
+      {canDrawPrize && (
+        <div className="tv-prize-controls">
+          <button
+            type="button"
+            onClick={handleDrawPrize}
+            disabled={drawingPrize}
+            className="tv-draw-prize-button"
+          >
+            {drawingPrize ? "Drawing..." : (
+              <>
+                <span style={{ display: "block" }}>🎁 Draw Prize</span>
+                <span style={{ display: "block", fontSize: "0.7em", fontWeight: 400, opacity: 0.85 }}>
+                  (participants in this session)
+                </span>
+              </>
+            )}
+          </button>
+          {prizeError && (
+            <div className="tv-prize-error">{prizeError}</div>
+          )}
+        </div>
+      )}
+
+      {/* Prize winner overlay */}
+      {prizeWinner && (
+        <div className="tv-prize-overlay" onClick={() => setPrizeWinner(null)}>
+          <div className="tv-prize-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="tv-prize-emoji">🎉</div>
+            <div className="tv-prize-heading">Prize Winner!</div>
+            <div className="tv-prize-winner-name">{prizeWinner.displayName}</div>
+            <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "center" }}>
+              <button
+                type="button"
+                className="secondary"
+                onClick={handleReroll}
+                disabled={drawingPrize}
+              >
+                {drawingPrize ? "Drawing..." : "Reroll (not claimed)"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrizeWinner(null)}
+              >
+                Close
+              </button>
+            </div>
+            {prizeError && (
+              <div className="tv-prize-error" style={{ marginTop: 12 }}>{prizeError}</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Footer area */}
       <div className="tv-footer">

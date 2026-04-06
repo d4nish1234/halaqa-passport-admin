@@ -9,6 +9,7 @@ export type SeriesRecord = {
   createdAt: Timestamp;
   rewards?: number[];
   managers?: string[];
+  prizeExcludePastWinners?: boolean;
 };
 
 export type SessionRecord = {
@@ -28,6 +29,14 @@ export type AttendanceRecord = {
   timestamp: Timestamp;
 };
 
+export type PrizeWinnerRecord = {
+  participantId: string;
+  seriesId: string;
+  sessionId: string;
+  timestamp: Timestamp;
+};
+
 export type Series = SeriesRecord & { id: string };
 export type Session = SessionRecord & { id: string };
 export type Attendance = AttendanceRecord & { id: string };
+export type PrizeWinner = PrizeWinnerRecord & { id: string };

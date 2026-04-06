@@ -3,6 +3,7 @@ import { getSeries } from "@/lib/data/series";
 import { listAttendance } from "@/lib/data/attendance";
 import { getParticipantsByIds } from "@/lib/data/participants";
 import { getLevelFromExperience } from "@/lib/data/levels";
+import { listPrizeWinnersForSeries } from "@/lib/data/prizeWinners";
 
 type LeaderboardEntry = {
   participantId: string;
@@ -12,6 +13,7 @@ type LeaderboardEntry = {
   xpTotal: number;
   xpCurrentLevelAt: number;
   xpNextLevelAt: number;
+  prizeWinner: boolean;
 };
 
 export async function GET(
@@ -32,8 +34,13 @@ export async function GET(
 
   const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
   const topEntries = sorted.slice(0, 10);
-  const participantsById = await getParticipantsByIds(
-    topEntries.map(([participantId]) => participantId)
+  const [participantsById, prizeWinners] = await Promise.all([
+    getParticipantsByIds(topEntries.map(([participantId]) => participantId)),
+    listPrizeWinnersForSeries(seriesId)
+  ]);
+
+  const prizeWinnerIds = new Set(
+    prizeWinners.map((winner) => winner.participantId)
   );
 
   const leaderboard: LeaderboardEntry[] = topEntries.map(
@@ -47,7 +54,8 @@ export async function GET(
         level: xp.level,
         xpTotal: xp.total,
         xpCurrentLevelAt: xp.currentLevelAt,
-        xpNextLevelAt: xp.nextLevelAt
+        xpNextLevelAt: xp.nextLevelAt,
+        prizeWinner: prizeWinnerIds.has(participantId)
       };
     }
   );

@@ -1,6 +1,9 @@
 import TvSessionDisplay, { type TvSessionData } from "@/components/TvSessionDisplay";
 import { getSession } from "@/lib/data/sessions";
 import { getSeries } from "@/lib/data/series";
+import { getSessionUser } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
+import { canManageSeries } from "@/lib/auth/series";
 
 function toIso(value: any) {
   if (!value) return null;
@@ -25,6 +28,15 @@ export default async function TvPage({
 
   const series = await getSeries(session.seriesId);
 
+  let canDrawPrize = false;
+  if (series) {
+    const user = await getSessionUser();
+    if (user?.email) {
+      const isAdmin = isAdminEmail(user.email);
+      canDrawPrize = canManageSeries({ email: user.email, series, isAdmin });
+    }
+  }
+
   const data: TvSessionData = {
     id: session.id,
     seriesId: session.seriesId,
@@ -42,6 +54,7 @@ export default async function TvPage({
       initialData={data}
       androidAppUrl={process.env.NEXT_PUBLIC_ANDROID_APP_URL}
       iosAppUrl={process.env.NEXT_PUBLIC_IOS_APP_URL}
+      canDrawPrize={canDrawPrize}
     />
   );
 }

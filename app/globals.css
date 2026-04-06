@@ -1684,6 +1684,94 @@ body:has(.tv-shell) footer {
 
 /* ── TV footer area ── */
 
+.tv-prize-controls {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 8px;
+}
+
+.tv-draw-prize-button {
+  font-size: 1.2rem;
+  padding: 14px 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tv-draw-prize-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+}
+
+.tv-draw-prize-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tv-prize-error {
+  color: #ef4444;
+  font-size: 0.95rem;
+}
+
+.tv-prize-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  animation: tv-prize-fade-in 0.3s ease;
+}
+
+.tv-prize-modal {
+  background: #1e1e1e;
+  border: 2px solid #f59e0b;
+  border-radius: 20px;
+  padding: 48px 64px;
+  text-align: center;
+  animation: tv-prize-pop 0.4s ease;
+}
+
+.tv-prize-emoji {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+
+.tv-prize-heading {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #f59e0b;
+  margin-bottom: 12px;
+}
+
+.tv-prize-winner-name {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+@keyframes tv-prize-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tv-prize-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .tv-footer {
   position: relative;
   z-index: 1;

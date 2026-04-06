@@ -6,7 +6,8 @@ import {
   updateSeriesDetails,
   updateSeriesStatus,
   updateSeriesRewards,
-  updateSeriesManagers
+  updateSeriesManagers,
+  updateSeriesPrizeSettings
 } from "@/lib/data/series";
 import { listSessions, createSession } from "@/lib/data/sessions";
 import { listAttendance } from "@/lib/data/attendance";
@@ -141,6 +142,19 @@ async function updateRewardsAction(formData: FormData) {
   redirect(`/admin/series/${seriesId}?rewards=1&t=${Date.now()}`);
 }
 
+async function updatePrizeSettingsAction(formData: FormData) {
+  "use server";
+  const seriesId = String(formData.get("seriesId") ?? "").trim();
+  if (!seriesId) return;
+
+  const auth = await authorizeForSeries(seriesId);
+  if (!auth) return;
+
+  const prizeExcludePastWinners = formData.get("prizeExcludePastWinners") === "on";
+  await updateSeriesPrizeSettings(seriesId, { prizeExcludePastWinners });
+  redirect(`/admin/series/${seriesId}?prize_settings=1&t=${Date.now()}`);
+}
+
 async function addManagerAction(formData: FormData) {
   "use server";
   const seriesId = String(formData.get("seriesId") ?? "").trim();
@@ -231,6 +245,7 @@ export default async function SeriesOverviewPage({
   const seriesUpdated = resolvedSearchParams?.updated === "1";
   const managerAdded = resolvedSearchParams?.manager_added === "1";
   const managerRemoved = resolvedSearchParams?.manager_removed === "1";
+  const prizeSettingsSaved = resolvedSearchParams?.prize_settings === "1";
 
   const [sessions, attendance] = await Promise.all([
     listSessions(seriesId),
@@ -302,6 +317,7 @@ export default async function SeriesOverviewPage({
       <Toast key={`rewards-${toastKey}`} message="Rewards saved successfully." visible={rewardsSaved} />
       <Toast key={`mgr-add-${toastKey}`} message="Manager added successfully." visible={managerAdded} />
       <Toast key={`mgr-rm-${toastKey}`} message="Manager removed." visible={managerRemoved} />
+      <Toast key={`prize-${toastKey}`} message="Prize drawing settings saved." visible={prizeSettingsSaved} />
       <div className="span-12">
         <Breadcrumbs
           items={[
@@ -499,6 +515,25 @@ export default async function SeriesOverviewPage({
           initialRewards={series.rewards ?? []}
           action={updateRewardsAction}
         />
+        <hr style={{ margin: "20px 0", border: "none", borderTop: "1px solid var(--border)" }} />
+        <h3>Random prize drawing (TV mode)</h3>
+        <p style={{ color: "var(--muted)", fontSize: 13 }}>
+          Control whether past prize winners can be selected again during random draws on the TV page.
+        </p>
+        <form action={updatePrizeSettingsAction}>
+          <input type="hidden" name="seriesId" value={series.id} />
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              name="prizeExcludePastWinners"
+              defaultChecked={series.prizeExcludePastWinners ?? false}
+            />
+            Exclude past prize winners from future random draws
+          </label>
+          <button type="submit" style={{ marginTop: 12 }}>
+            Save prize settings
+          </button>
+        </form>
       </section>
 
       <section className="card span-6">
